@@ -11,12 +11,10 @@ type Locale string
 
 const (
 	EN Locale = "en"
-	TH Locale = "th"
 )
 
 var supported = map[Locale]struct{}{
 	EN: {},
-	TH: {},
 }
 
 func Default() Locale {

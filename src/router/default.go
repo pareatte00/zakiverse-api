@@ -1,19 +1,19 @@
 package router
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
 func empty(c *gin.Context) {
-	response.Json(c, code.HttpNotFound, nil)
+	response.Http(c, http.StatusNotFound, nil)
 }
 
 func health(c *gin.Context) {
-	response.Json(c, code.HttpOK, nil)
+	response.Http(c, http.StatusOK, nil)
 }
 
 type InfoPayload struct {
@@ -21,9 +21,8 @@ type InfoPayload struct {
 }
 
 func info(c *gin.Context) {
-	response.Json(c, code.HttpOK, response.NewParam().
-		WithPayload(InfoPayload{
-			Version: os.Getenv("APP_VERSION"),
-		}),
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(InfoPayload{
+		Version: os.Getenv("APP_VERSION"),
+	}),
 	)
 }

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/zakiverse/zakiverse-api/core/cst"
@@ -65,17 +66,46 @@ func (c *Client) Disconnect() {
 	c.client.CloseIdleConnections()
 }
 
-func (c *Client) newRequest(ctx context.Context, method string, p string, body any, headers map[string]string) (*http.Request, error) {
+func (c *Client) newRequest(ctx context.Context, method string, p string, body any, bodyType BodyType, headers map[string]string) (*http.Request, error) {
+	if bodyType == 0 {
+		bodyType = BodyJson
+	}
+
 	u := *c.baseUrl
 	u.Path = path.Join(c.baseUrl.Path, p)
 
 	var bodyReader io.Reader
-	if body != nil {
-		b, err := json.Marshal(body)
-		if err != nil {
-			return nil, err
+
+	switch bodyType {
+	case BodyForm:
+		if body != nil {
+			switch b := body.(type) {
+			case url.Values:
+				bodyReader = strings.NewReader(b.Encode())
+			case map[string]string:
+				values := url.Values{}
+				for k, v := range b {
+					values.Set(k, v)
+				}
+				bodyReader = strings.NewReader(values.Encode())
+			case map[string]any:
+				values := url.Values{}
+				for k, v := range b {
+					values.Set(k, fmt.Sprint(v))
+				}
+				bodyReader = strings.NewReader(values.Encode())
+			default:
+				return nil, fmt.Errorf("form body must be url.Values or map[string]string or map[string]any")
+			}
 		}
-		bodyReader = bytes.NewReader(b)
+	case BodyJson:
+		if body != nil {
+			b, err := json.Marshal(body)
+			if err != nil {
+				return nil, err
+			}
+			bodyReader = bytes.NewReader(b)
+		}
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, u.String(), bodyReader)
@@ -83,7 +113,15 @@ func (c *Client) newRequest(ctx context.Context, method string, p string, body a
 		return nil, err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	switch bodyType {
+	case BodyForm:
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	case BodyJson:
+		req.Header.Set("Content-Type", "application/json")
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
@@ -91,10 +129,17 @@ func (c *Client) newRequest(ctx context.Context, method string, p string, body a
 	return req, nil
 }
 
+type BodyType int
+
+const (
+	BodyJson BodyType = iota
+	BodyForm
+)
+
 type Response struct {
 	StatusCode int
 	Headers    http.Header
-	Body       []byte
+	BodyType   BodyType
 }
 
 func (c *Client) do(req *http.Request, out any) (*Response, error) {
@@ -104,17 +149,36 @@ func (c *Client) do(req *http.Request, out any) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.StatusCode >= 400 {
-		body, _ := io.ReadAll(resp.Body)
 		return &Response{
 			StatusCode: resp.StatusCode,
 			Headers:    resp.Header,
-		}, fmt.Errorf("http %d: %s", resp.StatusCode, string(body))
+		}, fmt.Errorf("http %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	if out != nil {
-		if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
-			return nil, err
+		contentType := resp.Header.Get("Content-Type")
+		switch v := out.(type) {
+
+		case map[string]any, *map[string]any:
+			if err := json.Unmarshal(bodyBytes, out); err != nil {
+				return nil, err
+			}
+		case *string:
+			*v = string(bodyBytes)
+		case *[]byte:
+			*v = bodyBytes
+		default:
+			if strings.Contains(contentType, "application/json") {
+				if err := json.Unmarshal(bodyBytes, out); err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
@@ -125,13 +189,14 @@ func (c *Client) do(req *http.Request, out any) (*Response, error) {
 }
 
 type RequestParam struct {
-	Path   string
-	Header map[string]string
-	Body   any
+	Path     string
+	Header   map[string]string
+	Body     any
+	BodyType BodyType
 }
 
 func (c *Client) Get(ctx context.Context, out any, param RequestParam) (*Response, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, param.Path, param.Body, param.Header)
+	req, err := c.newRequest(ctx, http.MethodGet, param.Path, param.Body, param.BodyType, param.Header)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +204,7 @@ func (c *Client) Get(ctx context.Context, out any, param RequestParam) (*Respons
 }
 
 func (c *Client) Post(ctx context.Context, out any, param RequestParam) (*Response, error) {
-	req, err := c.newRequest(ctx, http.MethodPost, param.Path, param.Body, param.Header)
+	req, err := c.newRequest(ctx, http.MethodPost, param.Path, param.Body, param.BodyType, param.Header)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +212,7 @@ func (c *Client) Post(ctx context.Context, out any, param RequestParam) (*Respon
 }
 
 func (c *Client) Put(ctx context.Context, out any, param RequestParam) (*Response, error) {
-	req, err := c.newRequest(ctx, http.MethodPut, param.Path, param.Body, param.Header)
+	req, err := c.newRequest(ctx, http.MethodPut, param.Path, param.Body, param.BodyType, param.Header)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +220,7 @@ func (c *Client) Put(ctx context.Context, out any, param RequestParam) (*Respons
 }
 
 func (c *Client) Patch(ctx context.Context, out any, param RequestParam) (*Response, error) {
-	req, err := c.newRequest(ctx, http.MethodPatch, param.Path, param.Body, param.Header)
+	req, err := c.newRequest(ctx, http.MethodPatch, param.Path, param.Body, param.BodyType, param.Header)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +228,7 @@ func (c *Client) Patch(ctx context.Context, out any, param RequestParam) (*Respo
 }
 
 func (c *Client) Delete(ctx context.Context, out any, param RequestParam) (*Response, error) {
-	req, err := c.newRequest(ctx, http.MethodDelete, param.Path, param.Body, param.Header)
+	req, err := c.newRequest(ctx, http.MethodDelete, param.Path, param.Body, param.BodyType, param.Header)
 	if err != nil {
 		return nil, err
 	}

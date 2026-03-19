@@ -20,7 +20,7 @@ func (m *Middleware) AuthSystemServiceKey(c *gin.Context) {
 	}
 
 	if m.credential.SystemServiceKey == "" || m.credential.SystemServiceKey != header.SystemServiceKey {
-		response.Json(c, code.HttpUnauthorized, nil)
+		response.Error(c, code.HttpUnauthorized, nil)
 		c.Abort()
 		return
 	}

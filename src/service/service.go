@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/zakiverse/zakiverse-api/config"
+	"github.com/zakiverse/zakiverse-api/src/outbound"
 	"github.com/zakiverse/zakiverse-api/src/repository"
 )
 
@@ -12,6 +13,7 @@ type Dependency struct {
 	Credential config.ConfigCredential
 	Database   *sql.DB
 	Repository *repository.Repository
+	Outbound   *outbound.Outbound
 }
 
 type Service struct {
@@ -19,6 +21,7 @@ type Service struct {
 	credential config.ConfigCredential
 	database   *sql.DB
 	repository *repository.Repository
+	outbound   *outbound.Outbound
 
 	Account *AccountService
 }
@@ -29,6 +32,7 @@ func New(d Dependency) *Service {
 		credential: d.Credential,
 		database:   d.Database,
 		repository: d.Repository,
+		outbound:   d.Outbound,
 	}
 
 	service.Account = &AccountService{service: service}

@@ -1,31 +1,28 @@
 package binder
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/core/cst"
 	"github.com/zakiverse/zakiverse-api/logger"
 	"github.com/zakiverse/zakiverse-api/util/response"
 	"github.com/zakiverse/zakiverse-api/util/validator"
 )
 
-func validate(c *gin.Context, obj any, co code.Code) bool {
+func validate(c *gin.Context, obj any, httpStatus int) bool {
 	isValidatePass, errorFieldList, validatorErr := validator.Validate(obj)
 	if validatorErr != nil {
 		logger.Error(cst.KeyValidator, logger.Field(cst.KeyError, validatorErr.Error()))
-		response.Json(c, code.HttpInternalServerError, response.NewParam().
-			WithDebug(validatorErr),
-		)
+		response.Http(c, http.StatusInternalServerError, response.NewHttp().WithDebug(validatorErr))
 		return false
 	}
 	if !isValidatePass {
-		if co == code.HttpUnauthorized {
-			response.Json(c, co, nil)
+		if httpStatus == http.StatusUnauthorized {
+			response.Http(c, httpStatus, nil)
 		} else {
-			response.Json(c, co, response.NewParam().
-				WithMeta(errorFieldList),
-			)
+			response.Http(c, httpStatus, response.NewHttp().WithMeta(errorFieldList))
 		}
 		return false
 	}
@@ -35,7 +32,7 @@ func validate(c *gin.Context, obj any, co code.Code) bool {
 
 func BindHeader(c *gin.Context, obj any) bool {
 	if err := c.ShouldBindHeader(obj); err != nil {
-		response.Json(c, code.HttpUnauthorized, nil)
+		response.Http(c, http.StatusUnauthorized, nil)
 		return false
 	}
 
@@ -46,7 +43,7 @@ func ShouldBindHeader(c *gin.Context, obj any) bool {
 	if !BindHeader(c, obj) {
 		return false
 	}
-	if !validate(c, obj, code.HttpUnauthorized) {
+	if !validate(c, obj, http.StatusUnauthorized) {
 		return false
 	}
 
@@ -55,9 +52,7 @@ func ShouldBindHeader(c *gin.Context, obj any) bool {
 
 func BindBufferedJson(c *gin.Context, obj any) bool {
 	if err := c.ShouldBindBodyWith(obj, binding.JSON); err != nil {
-		response.Json(c, code.HttpBadRequest, response.NewParam().
-			WithMeta(err.Error()),
-		)
+		response.Http(c, http.StatusBadRequest, response.NewHttp().WithMeta(err.Error()))
 		return false
 	}
 
@@ -68,7 +63,7 @@ func ShouldBindBufferedJson(c *gin.Context, obj any) bool {
 	if !BindBufferedJson(c, obj) {
 		return false
 	}
-	if !validate(c, obj, code.HttpBadRequest) {
+	if !validate(c, obj, http.StatusBadRequest) {
 		return false
 	}
 
@@ -77,9 +72,7 @@ func ShouldBindBufferedJson(c *gin.Context, obj any) bool {
 
 func BindJson(c *gin.Context, obj any) bool {
 	if err := c.ShouldBindJSON(obj); err != nil {
-		response.Json(c, code.HttpBadRequest, response.NewParam().
-			WithMeta(err.Error()),
-		)
+		response.Http(c, http.StatusBadRequest, response.NewHttp().WithMeta(err.Error()))
 		return false
 	}
 
@@ -90,7 +83,7 @@ func ShouldBindJson(c *gin.Context, obj any) bool {
 	if !BindJson(c, obj) {
 		return false
 	}
-	if !validate(c, obj, code.HttpBadRequest) {
+	if !validate(c, obj, http.StatusBadRequest) {
 		return false
 	}
 
@@ -99,9 +92,7 @@ func ShouldBindJson(c *gin.Context, obj any) bool {
 
 func BindUri(c *gin.Context, obj any) bool {
 	if err := c.ShouldBindUri(obj); err != nil {
-		response.Json(c, code.HttpBadRequest, response.NewParam().
-			WithMeta(err.Error()),
-		)
+		response.Http(c, http.StatusBadRequest, response.NewHttp().WithMeta(err.Error()))
 		return false
 	}
 
@@ -112,7 +103,7 @@ func ShouldBindUri(c *gin.Context, obj any) bool {
 	if !BindUri(c, obj) {
 		return false
 	}
-	if !validate(c, obj, code.HttpBadRequest) {
+	if !validate(c, obj, http.StatusBadRequest) {
 		return false
 	}
 
@@ -121,9 +112,7 @@ func ShouldBindUri(c *gin.Context, obj any) bool {
 
 func BindQuery(c *gin.Context, obj any) bool {
 	if err := c.ShouldBindQuery(obj); err != nil {
-		response.Json(c, code.HttpBadRequest, response.NewParam().
-			WithMeta(err.Error()),
-		)
+		response.Http(c, http.StatusBadRequest, response.NewHttp().WithMeta(err.Error()))
 		return false
 	}
 
@@ -134,7 +123,7 @@ func ShouldBindQuery(c *gin.Context, obj any) bool {
 	if !BindQuery(c, obj) {
 		return false
 	}
-	if !validate(c, obj, code.HttpBadRequest) {
+	if !validate(c, obj, http.StatusBadRequest) {
 		return false
 	}
 

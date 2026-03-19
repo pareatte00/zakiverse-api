@@ -9,7 +9,10 @@ import (
 type ConfigCredential struct {
 	DatabaseUsername string `required:"true" split_words:"true"`
 	DatabasePassword string `required:"true" split_words:"true"`
-	SystemServiceKey string `required:"true" split_words:"true"`
+	SystemServiceKey   string `required:"true" split_words:"true"`
+	JwtSecret          string `required:"true" split_words:"true"`
+	DiscordClientId    string `required:"true" split_words:"true"`
+	DiscordClientSecret string `required:"true" split_words:"true"`
 }
 
 func initCredential(prefix string) ConfigCredential {

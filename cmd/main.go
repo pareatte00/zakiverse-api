@@ -15,6 +15,7 @@ import (
 	"github.com/zakiverse/zakiverse-api/database"
 	"github.com/zakiverse/zakiverse-api/logger"
 	"github.com/zakiverse/zakiverse-api/src/middleware"
+	"github.com/zakiverse/zakiverse-api/src/outbound"
 	"github.com/zakiverse/zakiverse-api/src/repository"
 	"github.com/zakiverse/zakiverse-api/src/router"
 	"github.com/zakiverse/zakiverse-api/src/service"
@@ -48,11 +49,13 @@ func main() {
 		Credential: credential,
 		Database:   dbConn,
 	})
+	ob := outbound.New(conf)
 	serv := service.New(service.Dependency{
 		Config:     conf,
 		Credential: credential,
 		Database:   dbConn,
 		Repository: repo,
+		Outbound:   ob,
 	})
 	mw := middleware.New(middleware.Dependency{
 		Config:     conf,

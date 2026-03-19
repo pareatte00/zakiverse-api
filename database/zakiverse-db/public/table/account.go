@@ -18,9 +18,10 @@ type accountTable struct {
 
 	// Columns
 	ID        postgres.ColumnString
+	DiscordId postgres.ColumnString
 	Username  postgres.ColumnString
 	Email     postgres.ColumnString
-	Password  postgres.ColumnString
+	Avatar    postgres.ColumnString
 	Role      postgres.ColumnString
 	CreatedAt postgres.ColumnTimestampz
 	UpdatedAt postgres.ColumnTimestampz
@@ -66,14 +67,15 @@ func newAccountTable(schemaName, tableName, alias string) *AccountTable {
 func newAccountTableImpl(schemaName, tableName, alias string) accountTable {
 	var (
 		IDColumn        = postgres.StringColumn("id")
+		DiscordIdColumn = postgres.StringColumn("discord_id")
 		UsernameColumn  = postgres.StringColumn("username")
 		EmailColumn     = postgres.StringColumn("email")
-		PasswordColumn  = postgres.StringColumn("password")
+		AvatarColumn    = postgres.StringColumn("avatar")
 		RoleColumn      = postgres.StringColumn("role")
 		CreatedAtColumn = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
-		allColumns      = postgres.ColumnList{IDColumn, UsernameColumn, EmailColumn, PasswordColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns  = postgres.ColumnList{UsernameColumn, EmailColumn, PasswordColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
+		allColumns      = postgres.ColumnList{IDColumn, DiscordIdColumn, UsernameColumn, EmailColumn, AvatarColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
+		mutableColumns  = postgres.ColumnList{DiscordIdColumn, UsernameColumn, EmailColumn, AvatarColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
 		defaultColumns  = postgres.ColumnList{IDColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
@@ -82,9 +84,10 @@ func newAccountTableImpl(schemaName, tableName, alias string) accountTable {
 
 		//Columns
 		ID:        IDColumn,
+		DiscordId: DiscordIdColumn,
 		Username:  UsernameColumn,
 		Email:     EmailColumn,
-		Password:  PasswordColumn,
+		Avatar:    AvatarColumn,
 		Role:      RoleColumn,
 		CreatedAt: CreatedAtColumn,
 		UpdatedAt: UpdatedAtColumn,

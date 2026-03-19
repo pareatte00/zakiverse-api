@@ -10,6 +10,10 @@ import (
 
 type Code string
 
+func (c Code) Err() I {
+	return I{code: c}
+}
+
 type Definition struct {
 	StatusCode int
 	Message    map[locale.Locale]string
@@ -24,10 +28,8 @@ func (c I) OK() bool {
 	return c.code == ""
 }
 
-func New(code Code) I {
-	return I{
-		code: code,
-	}
+func OK() I {
+	return I{}
 }
 
 func (c I) WithError(err error) I {

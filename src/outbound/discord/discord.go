@@ -1,4 +1,4 @@
-package jikan
+package discord
 
 import (
 	"github.com/zakiverse/zakiverse-api/config"
@@ -11,7 +11,7 @@ type Client struct {
 
 func New(conf config.ConfigConstant) *Client {
 	return &Client{
-		client: http.MustNew(conf.Outbound.Jikan.BaseUrl),
+		client: http.MustNew(conf.Outbound.Discord.BaseUrl),
 	}
 }
 

@@ -12,6 +12,12 @@ type ConfigConstant struct {
 	Application      ConfigConstantApplication `mapstructure:"application" validate:"required"`
 	Database         ConfigConstantDatabase    `mapstructure:"database" validate:"required"`
 	Outbound         ConfigConstantOutbound    `mapstructure:"outbound" validate:"required"`
+	Auth             ConfigConstantAuth        `mapstructure:"auth" validate:"required"`
+}
+
+type ConfigConstantAuth struct {
+	AccessTokenExpiryMin int    `mapstructure:"access_token_expiry_min" validate:"required"`
+	DiscordRedirectUri   string `mapstructure:"discord_redirect_uri" validate:"required"`
 }
 
 type ConfigConstantApplication struct {
@@ -37,10 +43,10 @@ type ConfigConstantDatabase struct {
 }
 
 type ConfigConstantOutbound struct {
-	Jikan ConfigConstantOutboundJikan `mapstructure:"jikan" validate:"required"`
+	Discord ConfigConstantOutboundDiscord `mapstructure:"discord" validate:"required"`
 }
 
-type ConfigConstantOutboundJikan struct {
+type ConfigConstantOutboundDiscord struct {
 	BaseUrl string `mapstructure:"base_url" validate:"required"`
 }
 

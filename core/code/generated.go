@@ -8,88 +8,64 @@ import (
 )
 
 func init() {
+	reg(AccountDiscordAuthFailed, Definition{
+		StatusCode: http.StatusUnauthorized,
+		Message: map[locale.Locale]string{
+			locale.EN: "Discord authentication failed",
+		},
+	})
 	reg(DefaultInvalidTimezone, Definition{
 		StatusCode: http.StatusBadRequest,
 		Message: map[locale.Locale]string{
 			locale.EN: "Invalid timezone",
-			locale.TH: "ไทม์โซนไม่ถูกต้อง",
 		},
 	})
 	reg(DefaultParseUrl, Definition{
 		StatusCode: http.StatusBadRequest,
 		Message: map[locale.Locale]string{
 			locale.EN: "Failed to parse url",
-			locale.TH: "ไม่สามารถแปลง url ได้",
-		},
-	})
-	reg(HttpOK, Definition{
-		StatusCode: http.StatusOK,
-		Message: map[locale.Locale]string{
-			locale.EN: "OK",
-			locale.TH: "สำเร็จ",
-		},
-	})
-	reg(HttpCreated, Definition{
-		StatusCode: http.StatusCreated,
-		Message: map[locale.Locale]string{
-			locale.EN: "Created",
-			locale.TH: "สร้างสำเร็จ",
-		},
-	})
-	reg(HttpNoContent, Definition{
-		StatusCode: http.StatusNoContent,
-		Message: map[locale.Locale]string{
-			locale.EN: "No content",
-			locale.TH: "ไม่มีเนื้อหา",
 		},
 	})
 	reg(HttpBadRequest, Definition{
 		StatusCode: http.StatusBadRequest,
 		Message: map[locale.Locale]string{
 			locale.EN: "Bad request",
-			locale.TH: "คำขอไม่ถูกต้อง",
 		},
 	})
 	reg(HttpUnauthorized, Definition{
 		StatusCode: http.StatusUnauthorized,
 		Message: map[locale.Locale]string{
 			locale.EN: "Unauthorized",
-			locale.TH: "ไม่ได้รับอนุญาต",
 		},
 	})
 	reg(HttpForbidden, Definition{
 		StatusCode: http.StatusForbidden,
 		Message: map[locale.Locale]string{
 			locale.EN: "Forbidden",
-			locale.TH: "ไม่มีสิทธิ์เข้าถึง",
 		},
 	})
 	reg(HttpNotFound, Definition{
 		StatusCode: http.StatusNotFound,
 		Message: map[locale.Locale]string{
 			locale.EN: "Not found",
-			locale.TH: "ไม่พบข้อมูล",
 		},
 	})
 	reg(HttpConflict, Definition{
 		StatusCode: http.StatusConflict,
 		Message: map[locale.Locale]string{
 			locale.EN: "Conflict",
-			locale.TH: "ข้อมูลขัดแย้ง",
 		},
 	})
 	reg(HttpInternalServerError, Definition{
 		StatusCode: http.StatusInternalServerError,
 		Message: map[locale.Locale]string{
 			locale.EN: "Internal server error",
-			locale.TH: "เกิดข้อผิดพลาดภายในระบบ",
 		},
 	})
 	reg(ErrorNotImplemented, Definition{
 		StatusCode: http.StatusNotImplemented,
 		Message: map[locale.Locale]string{
 			locale.EN: "Error not implemented",
-			locale.TH: "ไม่พบความผิดพลาดประเภทนี้ในระบบ",
 		},
 	})
 }

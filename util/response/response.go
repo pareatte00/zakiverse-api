@@ -12,50 +12,72 @@ import (
 	"github.com/zakiverse/zakiverse-api/core/locale"
 )
 
-type Response struct {
+type HttpResponse struct {
 	Timestamp string `json:"timestamp"`
-	Detail    Detail `json:"detail"`
 	Payload   any    `json:"payload,omitempty"`
+	Meta      any    `json:"meta,omitempty"`
 	Debug     any    `json:"debug,omitempty"`
 	Version   string `json:"version"`
 }
 
-type Param struct {
-	payload any
-	debug   error
-	meta    any
+type ErrorResponse struct {
+	Timestamp string      `json:"timestamp"`
+	Error     ErrorDetail `json:"error"`
+	Meta      any         `json:"meta,omitempty"`
+	Debug     any         `json:"debug,omitempty"`
+	Version   string      `json:"version"`
 }
 
-type Detail struct {
+type ErrorDetail struct {
 	Code    code.Code `json:"code"`
 	Message string    `json:"message"`
-	Meta    any       `json:"meta,omitempty"`
 }
 
-func NewParam() *Param {
-	return &Param{}
+type HttpParam struct {
+	payload any
+	meta    any
+	debug   error
 }
 
-func (p *Param) WithPayload(payload any) *Param {
+type ErrorParam struct {
+	meta  any
+	debug error
+}
+
+func NewHttp() *HttpParam {
+	return &HttpParam{}
+}
+
+func (p *HttpParam) WithPayload(payload any) *HttpParam {
 	p.payload = payload
 	return p
 }
 
-func (p *Param) WithDebug(debug error) *Param {
+func (p *HttpParam) WithDebug(debug error) *HttpParam {
 	p.debug = debug
 	return p
 }
 
-func (p *Param) WithMeta(meta any) *Param {
+func (p *HttpParam) WithMeta(meta any) *HttpParam {
 	p.meta = meta
 	return p
 }
 
-func Json(c *gin.Context, co code.Code, param *Param) {
-	loc := locale.GetLocale(c)
-	cod, statusCode := code.GetStatusCode(co)
-	msg := code.GetMessage(co, loc)
+func NewError() *ErrorParam {
+	return &ErrorParam{}
+}
 
+func (p *ErrorParam) WithDebug(debug error) *ErrorParam {
+	p.debug = debug
+	return p
+}
+
+func (p *ErrorParam) WithMeta(meta any) *ErrorParam {
+	p.meta = meta
+	return p
+}
+
+func Http(c *gin.Context, statusCode int, param *HttpParam) {
 	var payload any
 	if param != nil && param.payload != nil {
 		payload = param.payload
@@ -73,14 +95,39 @@ func Json(c *gin.Context, co code.Code, param *Param) {
 		meta = param.meta
 	}
 
-	c.JSON(statusCode, Response{
+	c.JSON(statusCode, HttpResponse{
 		Timestamp: time.Now().Format(time.RFC3339),
 		Payload:   payload,
-		Detail: Detail{
+		Meta:      meta,
+		Debug:     debug,
+		Version:   os.Getenv("APP_VERSION"),
+	})
+}
+
+func Error(c *gin.Context, co code.Code, param *ErrorParam) {
+	loc := locale.GetLocale(c)
+	cod, statusCode := code.GetStatusCode(co)
+	msg := code.GetMessage(co, loc)
+
+	var debug any
+	if strings.ToLower(viper.GetString("application.deploy_mode")) == cst.DeployModeDevelopment {
+		if param != nil && param.debug != nil {
+			debug = param.debug.Error()
+		}
+	}
+
+	var meta any
+	if param != nil && param.meta != nil {
+		meta = param.meta
+	}
+
+	c.JSON(statusCode, ErrorResponse{
+		Timestamp: time.Now().Format(time.RFC3339),
+		Error: ErrorDetail{
 			Code:    cod,
 			Message: msg,
-			Meta:    meta,
 		},
+		Meta:    meta,
 		Debug:   debug,
 		Version: os.Getenv("APP_VERSION"),
 	})

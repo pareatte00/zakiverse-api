@@ -23,5 +23,5 @@ func Account(router *gin.RouterGroup, d AccountDependency) {
 	})
 
 	r := router.Group("account")
-	r.POST("register", handler.Register)
+	r.POST("auth/discord", handler.AuthDiscord)
 }
