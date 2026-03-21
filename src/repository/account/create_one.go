@@ -19,7 +19,7 @@ func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model
 	var dest model.Account
 
 	stmt := Account.INSERT(
-		Account.DiscordId,
+		Account.DiscordID,
 		Account.Username,
 		Account.Email,
 		Account.Avatar,

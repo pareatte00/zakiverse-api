@@ -14,7 +14,7 @@ func (r *Repository) FindOneByDiscordId(ctx context.Context, discordId string) (
 
 	stmt := postgres.SELECT(Account.AllColumns).
 		FROM(Account).
-		WHERE(Account.DiscordId.EQ(postgres.String(discordId)))
+		WHERE(Account.DiscordID.EQ(postgres.String(discordId)))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
 	if err != nil {

@@ -24,4 +24,8 @@ func Account(router *gin.RouterGroup, d AccountDependency) {
 
 	r := router.Group("account")
 	r.POST("auth/discord", handler.AuthDiscord)
+	auth := r.Use(d.Middleware.AuthJWT)
+	{
+		auth.GET("me", handler.FindOneById)
+	}
 }

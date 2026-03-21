@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/go-jet/jet/v2/qrm"
+	"github.com/google/uuid"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	discordOutbound "github.com/zakiverse/zakiverse-api/src/outbound/discord"
 	accountRepo "github.com/zakiverse/zakiverse-api/src/repository/account"
@@ -84,5 +85,37 @@ func (s *AccountService) AuthDiscord(ctx context.Context, param AuthDiscordParam
 
 	return AuthDiscordPayload{
 		AccessToken: token,
+	}, code.OK()
+}
+
+type FindOneByIdParam struct {
+	AccountId uuid.UUID
+}
+
+type FindOneByIdPayload struct {
+	ID        uuid.UUID `json:"id"`
+	DiscordId string    `json:"discord_id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Avatar    *string   `json:"avatar"`
+	Role      string    `json:"role"`
+}
+
+func (s *AccountService) FindOneById(ctx context.Context, param FindOneByIdParam) (FindOneByIdPayload, code.I) {
+	account, err := s.service.repository.Account.FindOneById(ctx, param.AccountId.String())
+	if err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return FindOneByIdPayload{}, code.ModelNotFound.Err()
+		}
+		return FindOneByIdPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	return FindOneByIdPayload{
+		ID:        account.ID,
+		DiscordId: account.DiscordID,
+		Username:  account.Username,
+		Email:     account.Email,
+		Avatar:    account.Avatar,
+		Role:      string(account.Role),
 	}, code.OK()
 }

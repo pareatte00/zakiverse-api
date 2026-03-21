@@ -23,7 +23,11 @@ type Service struct {
 	repository *repository.Repository
 	outbound   *outbound.Outbound
 
-	Account *AccountService
+	Account     *AccountService
+	Rarity      *RarityService
+	Anime       *AnimeService
+	Card        *CardService
+	AccountCard *AccountCardService
 }
 
 func New(d Dependency) *Service {
@@ -36,6 +40,10 @@ func New(d Dependency) *Service {
 	}
 
 	service.Account = &AccountService{service: service}
+	service.Rarity = &RarityService{service: service}
+	service.Anime = &AnimeService{service: service}
+	service.Card = &CardService{service: service}
+	service.AccountCard = &AccountCardService{service: service}
 
 	return service
 }

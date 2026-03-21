@@ -11,4 +11,8 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Account = Account.FromSchema(schema)
+	AccountCard = AccountCard.FromSchema(schema)
+	Anime = Anime.FromSchema(schema)
+	Card = Card.FromSchema(schema)
+	Rarity = Rarity.FromSchema(schema)
 }

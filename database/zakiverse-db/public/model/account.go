@@ -14,11 +14,11 @@ import (
 
 type Account struct {
 	ID        uuid.UUID `sql:"primary_key"`
-	DiscordId string
 	Username  string
 	Email     string
-	Avatar    *string
 	Role      AccountRole
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	DiscordID string
+	Avatar    *string
 }

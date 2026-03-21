@@ -39,7 +39,6 @@ type ConfigConstantDatabase struct {
 	MaxIdleConnection     int    `mapstructure:"max_idle_connection" validate:"required"`
 	MaxConnectionLifetime int    `mapstructure:"max_connection_lifetime" validate:"required"`
 	MaxConnectionIdleTime int    `mapstructure:"max_connection_idle_time" validate:"required"`
-	CreateBatchSize       int    `mapstructure:"create_batch_size" validate:"required"` // only for postgresql
 }
 
 type ConfigConstantOutbound struct {

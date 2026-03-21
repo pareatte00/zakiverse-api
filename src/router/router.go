@@ -33,4 +33,32 @@ func Bind(d Dependency) {
 		Middleware: d.Middleware,
 		Service:    d.Service,
 	})
+
+	Rarity(v1, RarityDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
+
+	Anime(v1, AnimeDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
+
+	Card(v1, CardDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
+
+	AccountCard(v1, AccountCardDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
 }

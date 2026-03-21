@@ -18,13 +18,13 @@ type accountTable struct {
 
 	// Columns
 	ID        postgres.ColumnString
-	DiscordId postgres.ColumnString
 	Username  postgres.ColumnString
 	Email     postgres.ColumnString
-	Avatar    postgres.ColumnString
 	Role      postgres.ColumnString
 	CreatedAt postgres.ColumnTimestampz
 	UpdatedAt postgres.ColumnTimestampz
+	DiscordID postgres.ColumnString
+	Avatar    postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -67,15 +67,15 @@ func newAccountTable(schemaName, tableName, alias string) *AccountTable {
 func newAccountTableImpl(schemaName, tableName, alias string) accountTable {
 	var (
 		IDColumn        = postgres.StringColumn("id")
-		DiscordIdColumn = postgres.StringColumn("discord_id")
 		UsernameColumn  = postgres.StringColumn("username")
 		EmailColumn     = postgres.StringColumn("email")
-		AvatarColumn    = postgres.StringColumn("avatar")
 		RoleColumn      = postgres.StringColumn("role")
 		CreatedAtColumn = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
-		allColumns      = postgres.ColumnList{IDColumn, DiscordIdColumn, UsernameColumn, EmailColumn, AvatarColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns  = postgres.ColumnList{DiscordIdColumn, UsernameColumn, EmailColumn, AvatarColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
+		DiscordIDColumn = postgres.StringColumn("discord_id")
+		AvatarColumn    = postgres.StringColumn("avatar")
+		allColumns      = postgres.ColumnList{IDColumn, UsernameColumn, EmailColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn, DiscordIDColumn, AvatarColumn}
+		mutableColumns  = postgres.ColumnList{UsernameColumn, EmailColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn, DiscordIDColumn, AvatarColumn}
 		defaultColumns  = postgres.ColumnList{IDColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
@@ -84,13 +84,13 @@ func newAccountTableImpl(schemaName, tableName, alias string) accountTable {
 
 		//Columns
 		ID:        IDColumn,
-		DiscordId: DiscordIdColumn,
 		Username:  UsernameColumn,
 		Email:     EmailColumn,
-		Avatar:    AvatarColumn,
 		Role:      RoleColumn,
 		CreatedAt: CreatedAtColumn,
 		UpdatedAt: UpdatedAtColumn,
+		DiscordID: DiscordIDColumn,
+		Avatar:    AvatarColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

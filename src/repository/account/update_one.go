@@ -27,7 +27,7 @@ func (r *Repository) UpdateOneByDiscordId(ctx context.Context, discordId string,
 		param.Email,
 		param.Avatar,
 	).WHERE(
-		Account.DiscordId.EQ(postgres.String(discordId)),
+		Account.DiscordID.EQ(postgres.String(discordId)),
 	).RETURNING(Account.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

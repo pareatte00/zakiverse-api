@@ -14,6 +14,24 @@ func init() {
 			locale.EN: "Discord authentication failed",
 		},
 	})
+	reg(AccountCardAlreadyOwned, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Account already owns this card",
+		},
+	})
+	reg(AnimeAlreadyExists, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Anime already exists",
+		},
+	})
+	reg(AnimeDeleteHasCards, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Cannot delete anime that has cards",
+		},
+	})
 	reg(DefaultInvalidTimezone, Definition{
 		StatusCode: http.StatusBadRequest,
 		Message: map[locale.Locale]string{
@@ -62,10 +80,34 @@ func init() {
 			locale.EN: "Internal server error",
 		},
 	})
+	reg(ModelNotFound, Definition{
+		StatusCode: http.StatusNotFound,
+		Message: map[locale.Locale]string{
+			locale.EN: "Data not found",
+		},
+	})
 	reg(ErrorNotImplemented, Definition{
 		StatusCode: http.StatusNotImplemented,
 		Message: map[locale.Locale]string{
 			locale.EN: "Error not implemented",
+		},
+	})
+	reg(CardAlreadyExists, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Card already exists",
+		},
+	})
+	reg(RarityNameConflict, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Rarity name already exists",
+		},
+	})
+	reg(RarityDeleteHasCards, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Cannot delete rarity assigned to cards",
 		},
 	})
 }
