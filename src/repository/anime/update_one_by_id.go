@@ -27,7 +27,7 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, param UpdateO
 		param.Synopsis,
 		param.CoverImage,
 	).WHERE(
-		Anime.ID.EQ(postgres.String(id)),
+		Anime.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()),
 	).RETURNING(Anime.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

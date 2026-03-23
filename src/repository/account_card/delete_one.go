@@ -11,8 +11,8 @@ import (
 func (r *Repository) DeleteOne(ctx context.Context, accountId string, cardId string) error {
 	stmt := AccountCard.DELETE().
 		WHERE(
-			AccountCard.AccountID.EQ(postgres.String(accountId)).
-				AND(AccountCard.CardID.EQ(postgres.String(cardId))),
+			AccountCard.AccountID.EQ(postgres.CAST(postgres.String(accountId)).AS_UUID()).
+				AND(AccountCard.CardID.EQ(postgres.CAST(postgres.String(cardId)).AS_UUID())),
 		)
 
 	_, err := stmt.ExecContext(ctx, r.db)

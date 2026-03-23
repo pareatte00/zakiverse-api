@@ -10,7 +10,7 @@ import (
 
 func (r *Repository) DeleteOneById(ctx context.Context, id string) error {
 	stmt := Rarity.DELETE().
-		WHERE(Rarity.ID.EQ(postgres.String(id)))
+		WHERE(Rarity.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	_, err := stmt.ExecContext(ctx, r.db)
 	if err != nil {

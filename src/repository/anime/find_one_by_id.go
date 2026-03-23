@@ -14,7 +14,7 @@ func (r *Repository) FindOneById(ctx context.Context, id string) (model.Anime, e
 
 	stmt := postgres.SELECT(Anime.AllColumns).
 		FROM(Anime).
-		WHERE(Anime.ID.EQ(postgres.String(id)))
+		WHERE(Anime.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
 	if err != nil {

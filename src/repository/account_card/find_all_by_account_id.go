@@ -20,7 +20,7 @@ func (r *Repository) FindAllByAccountId(ctx context.Context, param FindAllByAcco
 
 	stmt := postgres.SELECT(AccountCard.AllColumns).
 		FROM(AccountCard).
-		WHERE(AccountCard.AccountID.EQ(postgres.String(param.AccountId))).
+		WHERE(AccountCard.AccountID.EQ(postgres.CAST(postgres.String(param.AccountId)).AS_UUID())).
 		ORDER_BY(AccountCard.ObtainedAt.DESC()).
 		LIMIT(param.Limit).
 		OFFSET(param.Offset)

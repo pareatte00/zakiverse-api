@@ -14,7 +14,7 @@ func (r *Repository) FindOneById(ctx context.Context, id string) (model.Rarity, 
 
 	stmt := postgres.SELECT(Rarity.AllColumns).
 		FROM(Rarity).
-		WHERE(Rarity.ID.EQ(postgres.String(id)))
+		WHERE(Rarity.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
 	if err != nil {

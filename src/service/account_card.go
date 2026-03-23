@@ -66,7 +66,7 @@ func (s *AccountCardService) AddCard(ctx context.Context, param AddCardParam) (A
 	})
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23505" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23505" {
 			return AccountCardPayload{}, code.AccountCardAlreadyOwned.Err()
 		}
 		return AccountCardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

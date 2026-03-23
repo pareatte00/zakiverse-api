@@ -24,7 +24,7 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, param UpdateO
 		param.Name,
 		param.Config,
 	).WHERE(
-		Rarity.ID.EQ(postgres.String(id)),
+		Rarity.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()),
 	).RETURNING(Rarity.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

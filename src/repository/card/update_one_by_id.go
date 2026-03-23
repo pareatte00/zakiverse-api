@@ -30,7 +30,7 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, param UpdateO
 		param.Image,
 		param.Config,
 	).WHERE(
-		Card.ID.EQ(postgres.String(id)),
+		Card.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()),
 	).RETURNING(Card.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

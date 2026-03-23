@@ -14,7 +14,7 @@ func (r *Repository) FindOneById(ctx context.Context, id string) (model.Account,
 
 	stmt := postgres.SELECT(Account.AllColumns).
 		FROM(Account).
-		WHERE(Account.ID.EQ(postgres.String(id)))
+		WHERE(Account.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
 	if err != nil {

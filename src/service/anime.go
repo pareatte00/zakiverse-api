@@ -40,7 +40,7 @@ func (s *AnimeService) CreateOne(ctx context.Context, param CreateAnimeParam) (A
 	})
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23505" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23505" {
 			return AnimePayload{}, code.AnimeAlreadyExists.Err()
 		}
 		return AnimePayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
@@ -135,7 +135,7 @@ func (s *AnimeService) DeleteOneById(ctx context.Context, id string) code.I {
 	err := s.service.repository.Anime.DeleteOneById(ctx, id)
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23503" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23503" {
 			return code.AnimeDeleteHasCards.Err()
 		}
 		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

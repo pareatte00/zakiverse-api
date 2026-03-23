@@ -15,8 +15,8 @@ func (r *Repository) FindOneByAccountIdAndCardId(ctx context.Context, accountId 
 	stmt := postgres.SELECT(AccountCard.AllColumns).
 		FROM(AccountCard).
 		WHERE(
-			AccountCard.AccountID.EQ(postgres.String(accountId)).
-				AND(AccountCard.CardID.EQ(postgres.String(cardId))),
+			AccountCard.AccountID.EQ(postgres.CAST(postgres.String(accountId)).AS_UUID()).
+				AND(AccountCard.CardID.EQ(postgres.CAST(postgres.String(cardId)).AS_UUID())),
 		)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

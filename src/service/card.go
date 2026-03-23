@@ -46,7 +46,7 @@ func (s *CardService) CreateOne(ctx context.Context, param CreateCardParam) (Car
 	})
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23505" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23505" {
 			return CardPayload{}, code.CardAlreadyExists.Err()
 		}
 		return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
@@ -153,7 +153,7 @@ func (s *CardService) DeleteOneById(ctx context.Context, id string) code.I {
 	err := s.service.repository.Card.DeleteOneById(ctx, id)
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23503" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23503" {
 			return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 		}
 		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

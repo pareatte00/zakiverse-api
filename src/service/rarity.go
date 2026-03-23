@@ -34,7 +34,7 @@ func (s *RarityService) CreateOne(ctx context.Context, param CreateRarityParam) 
 	})
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23505" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23505" {
 			return RarityPayload{}, code.RarityNameConflict.Err()
 		}
 		return RarityPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
@@ -96,7 +96,7 @@ func (s *RarityService) UpdateOneById(ctx context.Context, id string, param Upda
 			return RarityPayload{}, code.ModelNotFound.Err()
 		}
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23505" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23505" {
 			return RarityPayload{}, code.RarityNameConflict.Err()
 		}
 		return RarityPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
@@ -113,7 +113,7 @@ func (s *RarityService) DeleteOneById(ctx context.Context, id string) code.I {
 	err := s.service.repository.Rarity.DeleteOneById(ctx, id)
 	if err != nil {
 		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) =="23503" {
+		if errors.As(err, &pgErr) && string(pgErr.Code) == "23503" {
 			return code.RarityDeleteHasCards.Err()
 		}
 		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

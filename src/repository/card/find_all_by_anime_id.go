@@ -20,7 +20,7 @@ func (r *Repository) FindAllByAnimeId(ctx context.Context, param FindAllByAnimeI
 
 	stmt := postgres.SELECT(Card.AllColumns).
 		FROM(Card).
-		WHERE(Card.AnimeID.EQ(postgres.String(param.AnimeId))).
+		WHERE(Card.AnimeID.EQ(postgres.CAST(postgres.String(param.AnimeId)).AS_UUID())).
 		ORDER_BY(Card.Name.ASC()).
 		LIMIT(param.Limit).
 		OFFSET(param.Offset)
