@@ -17,32 +17,29 @@ type CardService struct {
 }
 
 type CreateCardParam struct {
-	MalId    int32
-	AnimeId  string
-	RarityId string
-	Name     string
-	Image    string
-	Config   string
+	MalId   int32
+	AnimeId string
+	Rarity  string
+	Name    string
+	Image   string
 }
 
 type CardPayload struct {
-	Id       uuid.UUID `json:"id"`
-	MalId    int32     `json:"mal_id"`
-	AnimeId  string    `json:"anime_id"`
-	RarityId string    `json:"rarity_id"`
-	Name     string    `json:"name"`
-	Image    string    `json:"image"`
-	Config   string    `json:"config"`
+	Id      uuid.UUID `json:"id"`
+	MalId   int32     `json:"mal_id"`
+	AnimeId string    `json:"anime_id"`
+	Rarity  string    `json:"rarity"`
+	Name    string    `json:"name"`
+	Image   string    `json:"image"`
 }
 
 func (s *CardService) CreateOne(ctx context.Context, param CreateCardParam) (CardPayload, code.I) {
 	card, err := s.service.repository.Card.CreateOne(ctx, cardRepo.CreateOneParam{
-		MalId:    param.MalId,
-		AnimeId:  param.AnimeId,
-		RarityId: param.RarityId,
-		Name:     param.Name,
-		Image:    param.Image,
-		Config:   param.Config,
+		MalId:   param.MalId,
+		AnimeId: param.AnimeId,
+		Rarity:  param.Rarity,
+		Name:    param.Name,
+		Image:   param.Image,
 	})
 	if err != nil {
 		var pgErr *pq.Error
@@ -53,13 +50,12 @@ func (s *CardService) CreateOne(ctx context.Context, param CreateCardParam) (Car
 	}
 
 	return CardPayload{
-		Id:       card.ID,
-		MalId:    card.MalID,
-		AnimeId:  card.AnimeID.String(),
-		RarityId: card.RarityID.String(),
-		Name:     card.Name,
-		Image:    card.Image,
-		Config:   card.Config,
+		Id:      card.ID,
+		MalId:   card.MalID,
+		AnimeId: card.AnimeID.String(),
+		Rarity:  string(card.Rarity),
+		Name:    card.Name,
+		Image:   card.Image,
 	}, code.OK()
 }
 
@@ -73,13 +69,12 @@ func (s *CardService) FindOneById(ctx context.Context, id string) (CardPayload, 
 	}
 
 	return CardPayload{
-		Id:       card.ID,
-		MalId:    card.MalID,
-		AnimeId:  card.AnimeID.String(),
-		RarityId: card.RarityID.String(),
-		Name:     card.Name,
-		Image:    card.Image,
-		Config:   card.Config,
+		Id:      card.ID,
+		MalId:   card.MalID,
+		AnimeId: card.AnimeID.String(),
+		Rarity:  string(card.Rarity),
+		Name:    card.Name,
+		Image:   card.Image,
 	}, code.OK()
 }
 
@@ -104,13 +99,12 @@ func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsBy
 	payload := make([]CardPayload, len(cards))
 	for i, c := range cards {
 		payload[i] = CardPayload{
-			Id:       c.ID,
-			MalId:    c.MalID,
-			AnimeId:  c.AnimeID.String(),
-			RarityId: c.RarityID.String(),
-			Name:     c.Name,
-			Image:    c.Image,
-			Config:   c.Config,
+			Id:      c.ID,
+			MalId:   c.MalID,
+			AnimeId: c.AnimeID.String(),
+			Rarity:  string(c.Rarity),
+			Name:    c.Name,
+			Image:   c.Image,
 		}
 	}
 
@@ -118,18 +112,16 @@ func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsBy
 }
 
 type UpdateCardParam struct {
-	RarityId string
-	Name     string
-	Image    string
-	Config   string
+	Rarity string
+	Name   string
+	Image  string
 }
 
 func (s *CardService) UpdateOneById(ctx context.Context, id string, param UpdateCardParam) (CardPayload, code.I) {
 	card, err := s.service.repository.Card.UpdateOneById(ctx, id, cardRepo.UpdateOneByIdParam{
-		RarityId: param.RarityId,
-		Name:     param.Name,
-		Image:    param.Image,
-		Config:   param.Config,
+		Rarity: param.Rarity,
+		Name:   param.Name,
+		Image:  param.Image,
 	})
 	if err != nil {
 		if errors.Is(err, qrm.ErrNoRows) {
@@ -139,23 +131,18 @@ func (s *CardService) UpdateOneById(ctx context.Context, id string, param Update
 	}
 
 	return CardPayload{
-		Id:       card.ID,
-		MalId:    card.MalID,
-		AnimeId:  card.AnimeID.String(),
-		RarityId: card.RarityID.String(),
-		Name:     card.Name,
-		Image:    card.Image,
-		Config:   card.Config,
+		Id:      card.ID,
+		MalId:   card.MalID,
+		AnimeId: card.AnimeID.String(),
+		Rarity:  string(card.Rarity),
+		Name:    card.Name,
+		Image:   card.Image,
 	}, code.OK()
 }
 
 func (s *CardService) DeleteOneById(ctx context.Context, id string) code.I {
 	err := s.service.repository.Card.DeleteOneById(ctx, id)
 	if err != nil {
-		var pgErr *pq.Error
-		if errors.As(err, &pgErr) && string(pgErr.Code) == "23503" {
-			return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
-		}
 		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 

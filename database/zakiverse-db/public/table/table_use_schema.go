@@ -14,5 +14,4 @@ func UseSchema(schema string) {
 	AccountCard = AccountCard.FromSchema(schema)
 	Anime = Anime.FromSchema(schema)
 	Card = Card.FromSchema(schema)
-	Rarity = Rarity.FromSchema(schema)
 }

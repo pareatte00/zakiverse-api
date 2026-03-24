@@ -10,12 +10,11 @@ import (
 )
 
 type createOneRequest struct {
-	MalId    int32  `json:"mal_id" validate:"required"`
-	AnimeId  string `json:"anime_id" validate:"required,uuid"`
-	RarityId string `json:"rarity_id" validate:"required,uuid"`
-	Name     string `json:"name" validate:"required"`
-	Image    string `json:"image" validate:"required"`
-	Config   string `json:"config" validate:"required"`
+	MalId   int32  `json:"mal_id" validate:"required"`
+	AnimeId string `json:"anime_id" validate:"required,uuid"`
+	Rarity  string `json:"rarity" validate:"required,oneof=common uncommon rare epic legendary"`
+	Name    string `json:"name" validate:"required"`
+	Image   string `json:"image" validate:"required"`
 }
 
 func (h Handler) CreateOne(c *gin.Context) {
@@ -25,12 +24,11 @@ func (h Handler) CreateOne(c *gin.Context) {
 	}
 
 	payload, codeErr := h.service.Card.CreateOne(c.Request.Context(), service.CreateCardParam{
-		MalId:    request.MalId,
-		AnimeId:  request.AnimeId,
-		RarityId: request.RarityId,
-		Name:     request.Name,
-		Image:    request.Image,
-		Config:   request.Config,
+		MalId:   request.MalId,
+		AnimeId: request.AnimeId,
+		Rarity:  request.Rarity,
+		Name:    request.Name,
+		Image:   request.Image,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

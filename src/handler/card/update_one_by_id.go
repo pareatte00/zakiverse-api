@@ -14,10 +14,9 @@ type updateOneByIdUri struct {
 }
 
 type updateOneByIdRequest struct {
-	RarityId string `json:"rarity_id" validate:"required,uuid"`
-	Name     string `json:"name" validate:"required"`
-	Image    string `json:"image" validate:"required"`
-	Config   string `json:"config" validate:"required"`
+	Rarity string `json:"rarity" validate:"required,oneof=common uncommon rare epic legendary"`
+	Name   string `json:"name" validate:"required"`
+	Image  string `json:"image" validate:"required"`
 }
 
 func (h Handler) UpdateOneById(c *gin.Context) {
@@ -32,10 +31,9 @@ func (h Handler) UpdateOneById(c *gin.Context) {
 	}
 
 	payload, codeErr := h.service.Card.UpdateOneById(c.Request.Context(), uri.Id, service.UpdateCardParam{
-		RarityId: request.RarityId,
-		Name:     request.Name,
-		Image:    request.Image,
-		Config:   request.Config,
+		Rarity: request.Rarity,
+		Name:   request.Name,
+		Image:  request.Image,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

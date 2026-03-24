@@ -16,10 +16,9 @@ type Card struct {
 	ID        uuid.UUID `sql:"primary_key"`
 	MalID     int32
 	AnimeID   uuid.UUID
-	RarityID  uuid.UUID
 	Name      string
 	Image     string
-	Config    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Rarity    CardRarity
 }

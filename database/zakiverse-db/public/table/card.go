@@ -20,12 +20,11 @@ type cardTable struct {
 	ID        postgres.ColumnString
 	MalID     postgres.ColumnInteger
 	AnimeID   postgres.ColumnString
-	RarityID  postgres.ColumnString
 	Name      postgres.ColumnString
 	Image     postgres.ColumnString
-	Config    postgres.ColumnString
 	CreatedAt postgres.ColumnTimestampz
 	UpdatedAt postgres.ColumnTimestampz
+	Rarity    postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -70,15 +69,14 @@ func newCardTableImpl(schemaName, tableName, alias string) cardTable {
 		IDColumn        = postgres.StringColumn("id")
 		MalIDColumn     = postgres.IntegerColumn("mal_id")
 		AnimeIDColumn   = postgres.StringColumn("anime_id")
-		RarityIDColumn  = postgres.StringColumn("rarity_id")
 		NameColumn      = postgres.StringColumn("name")
 		ImageColumn     = postgres.StringColumn("image")
-		ConfigColumn    = postgres.StringColumn("config")
 		CreatedAtColumn = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
-		allColumns      = postgres.ColumnList{IDColumn, MalIDColumn, AnimeIDColumn, RarityIDColumn, NameColumn, ImageColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns  = postgres.ColumnList{MalIDColumn, AnimeIDColumn, RarityIDColumn, NameColumn, ImageColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn}
-		defaultColumns  = postgres.ColumnList{IDColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn}
+		RarityColumn    = postgres.StringColumn("rarity")
+		allColumns      = postgres.ColumnList{IDColumn, MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn}
+		mutableColumns  = postgres.ColumnList{MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn}
+		defaultColumns  = postgres.ColumnList{IDColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
 	return cardTable{
@@ -88,12 +86,11 @@ func newCardTableImpl(schemaName, tableName, alias string) cardTable {
 		ID:        IDColumn,
 		MalID:     MalIDColumn,
 		AnimeID:   AnimeIDColumn,
-		RarityID:  RarityIDColumn,
 		Name:      NameColumn,
 		Image:     ImageColumn,
-		Config:    ConfigColumn,
 		CreatedAt: CreatedAtColumn,
 		UpdatedAt: UpdatedAtColumn,
+		Rarity:    RarityColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

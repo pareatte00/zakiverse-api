@@ -10,25 +10,22 @@ import (
 )
 
 type UpdateOneByIdParam struct {
-	RarityId string
-	Name     string
-	Image    string
-	Config   string
+	Rarity string
+	Name   string
+	Image  string
 }
 
 func (r *Repository) UpdateOneById(ctx context.Context, id string, param UpdateOneByIdParam) (model.Card, error) {
 	var dest model.Card
 
 	stmt := Card.UPDATE(
-		Card.RarityID,
+		Card.Rarity,
 		Card.Name,
 		Card.Image,
-		Card.Config,
 	).SET(
-		param.RarityId,
+		param.Rarity,
 		param.Name,
 		param.Image,
-		param.Config,
 	).WHERE(
 		Card.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()),
 	).RETURNING(Card.AllColumns)

@@ -9,12 +9,11 @@ import (
 )
 
 type CreateOneParam struct {
-	MalId    int32
-	AnimeId  string
-	RarityId string
-	Name     string
-	Image    string
-	Config   string
+	MalId   int32
+	AnimeId string
+	Rarity  string
+	Name    string
+	Image   string
 }
 
 func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model.Card, error) {
@@ -23,17 +22,15 @@ func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model
 	stmt := Card.INSERT(
 		Card.MalID,
 		Card.AnimeID,
-		Card.RarityID,
+		Card.Rarity,
 		Card.Name,
 		Card.Image,
-		Card.Config,
 	).VALUES(
 		param.MalId,
 		param.AnimeId,
-		param.RarityId,
+		param.Rarity,
 		param.Name,
 		param.Image,
-		param.Config,
 	).RETURNING(Card.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

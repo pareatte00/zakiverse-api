@@ -34,13 +34,6 @@ func Bind(d Dependency) {
 		Service:    d.Service,
 	})
 
-	Rarity(v1, RarityDependency{
-		Config:     d.Config,
-		Credential: d.Credential,
-		Middleware: d.Middleware,
-		Service:    d.Service,
-	})
-
 	Anime(v1, AnimeDependency{
 		Config:     d.Config,
 		Credential: d.Credential,

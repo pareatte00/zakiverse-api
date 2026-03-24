@@ -24,7 +24,6 @@ type Service struct {
 	outbound   *outbound.Outbound
 
 	Account     *AccountService
-	Rarity      *RarityService
 	Anime       *AnimeService
 	Card        *CardService
 	AccountCard *AccountCardService
@@ -40,7 +39,6 @@ func New(d Dependency) *Service {
 	}
 
 	service.Account = &AccountService{service: service}
-	service.Rarity = &RarityService{service: service}
 	service.Anime = &AnimeService{service: service}
 	service.Card = &CardService{service: service}
 	service.AccountCard = &AccountCardService{service: service}

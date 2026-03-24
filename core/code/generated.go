@@ -98,16 +98,4 @@ func init() {
 			locale.EN: "Card already exists",
 		},
 	})
-	reg(RarityNameConflict, Definition{
-		StatusCode: http.StatusConflict,
-		Message: map[locale.Locale]string{
-			locale.EN: "Rarity name already exists",
-		},
-	})
-	reg(RarityDeleteHasCards, Definition{
-		StatusCode: http.StatusConflict,
-		Message: map[locale.Locale]string{
-			locale.EN: "Cannot delete rarity assigned to cards",
-		},
-	})
 }
