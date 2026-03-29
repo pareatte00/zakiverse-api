@@ -15,10 +15,12 @@ var CardRarity = &struct {
 	Rare      postgres.StringExpression
 	Epic      postgres.StringExpression
 	Legendary postgres.StringExpression
+	Prismatic postgres.StringExpression
 }{
 	Common:    postgres.NewEnumValue("common"),
 	Uncommon:  postgres.NewEnumValue("uncommon"),
 	Rare:      postgres.NewEnumValue("rare"),
 	Epic:      postgres.NewEnumValue("epic"),
 	Legendary: postgres.NewEnumValue("legendary"),
+	Prismatic: postgres.NewEnumValue("prismatic"),
 }

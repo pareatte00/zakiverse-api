@@ -21,4 +21,5 @@ type Card struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Rarity    CardRarity
+	Config    string
 }

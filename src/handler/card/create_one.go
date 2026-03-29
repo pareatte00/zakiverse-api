@@ -10,11 +10,15 @@ import (
 )
 
 type createOneRequest struct {
-	MalId   int32  `json:"mal_id" validate:"required"`
-	AnimeId string `json:"anime_id" validate:"required,uuid"`
-	Rarity  string `json:"rarity" validate:"required,oneof=common uncommon rare epic legendary"`
-	Name    string `json:"name" validate:"required"`
-	Image   string `json:"image" validate:"required"`
+	MalId           int32              `json:"mal_id" validate:"required"`
+	Rarity          string             `json:"rarity" validate:"required,oneof=common rare epic legendary prismatic"`
+	Name            string             `json:"name" validate:"required"`
+	Image           string             `json:"image" validate:"required"`
+	Config          service.CardConfig `json:"config"`
+	AnimeMalId      int32              `json:"anime_mal_id" validate:"required"`
+	AnimeTitle      string             `json:"anime_title" validate:"required"`
+	AnimeSynopsis   *string            `json:"anime_synopsis"`
+	AnimeCoverImage *string            `json:"anime_cover_image"`
 }
 
 func (h Handler) CreateOne(c *gin.Context) {
@@ -24,11 +28,15 @@ func (h Handler) CreateOne(c *gin.Context) {
 	}
 
 	payload, codeErr := h.service.Card.CreateOne(c.Request.Context(), service.CreateCardParam{
-		MalId:   request.MalId,
-		AnimeId: request.AnimeId,
-		Rarity:  request.Rarity,
-		Name:    request.Name,
-		Image:   request.Image,
+		MalId:           request.MalId,
+		Rarity:          request.Rarity,
+		Name:            request.Name,
+		Image:           request.Image,
+		Config:          request.Config,
+		AnimeMalId:      request.AnimeMalId,
+		AnimeTitle:      request.AnimeTitle,
+		AnimeSynopsis:   request.AnimeSynopsis,
+		AnimeCoverImage: request.AnimeCoverImage,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

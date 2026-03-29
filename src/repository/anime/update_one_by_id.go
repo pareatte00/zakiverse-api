@@ -9,24 +9,23 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-type UpdateOneByIdParam struct {
-	Title      string
-	Synopsis   *string
-	CoverImage *string
-}
-
-func (r *Repository) UpdateOneById(ctx context.Context, id string, param UpdateOneByIdParam) (model.Anime, error) {
+func (r *Repository) UpdateOneById(ctx context.Context, id string, updates map[string]any) (model.Anime, error) {
 	var dest model.Anime
 
-	stmt := Anime.UPDATE(
-		Anime.Title,
-		Anime.Synopsis,
-		Anime.CoverImage,
-	).SET(
-		param.Title,
-		param.Synopsis,
-		param.CoverImage,
-	).WHERE(
+	columnMap := map[string]postgres.Column{
+		"title":       Anime.Title,
+		"synopsis":    Anime.Synopsis,
+		"cover_image": Anime.CoverImage,
+	}
+
+	var f postgres.ColumnList
+	var vs []any
+	for k, v := range updates {
+		f = append(f, columnMap[k])
+		vs = append(vs, v)
+	}
+
+	stmt := Anime.UPDATE(f).SET(vs[0], vs[1:]...).WHERE(
 		Anime.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()),
 	).RETURNING(Anime.AllColumns)
 

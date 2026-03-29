@@ -4,16 +4,15 @@ import (
 	"context"
 
 	"github.com/go-jet/jet/v2/postgres"
-	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
 	. "github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/table"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-func (r *Repository) FindOneById(ctx context.Context, id string) (model.Card, error) {
-	var dest model.Card
+func (r *Repository) FindOneById(ctx context.Context, id string) (CardWithAnime, error) {
+	var dest CardWithAnime
 
-	stmt := postgres.SELECT(Card.AllColumns).
-		FROM(Card).
+	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns).
+		FROM(Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID))).
 		WHERE(Card.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

@@ -62,10 +62,10 @@ func (s *AccountService) AuthDiscord(ctx context.Context, param AuthDiscordParam
 			return AuthDiscordPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 		}
 	} else {
-		account, err = s.service.repository.Account.UpdateOneByDiscordId(ctx, discordUser.ID, accountRepo.UpdateOneParam{
-			Username: discordUser.Username,
-			Email:    discordUser.Email,
-			Avatar:   avatar,
+		account, err = s.service.repository.Account.UpdateOneByDiscordId(ctx, discordUser.ID, map[string]any{
+			"username": discordUser.Username,
+			"email":    discordUser.Email,
+			"avatar":   avatar,
 		})
 		if err != nil {
 			return AuthDiscordPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

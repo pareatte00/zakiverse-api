@@ -9,24 +9,23 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-type UpdateOneParam struct {
-	Username string
-	Email    string
-	Avatar   *string
-}
-
-func (r *Repository) UpdateOneByDiscordId(ctx context.Context, discordId string, param UpdateOneParam) (model.Account, error) {
+func (r *Repository) UpdateOneByDiscordId(ctx context.Context, discordId string, updates map[string]any) (model.Account, error) {
 	var dest model.Account
 
-	stmt := Account.UPDATE(
-		Account.Username,
-		Account.Email,
-		Account.Avatar,
-	).SET(
-		param.Username,
-		param.Email,
-		param.Avatar,
-	).WHERE(
+	columnMap := map[string]postgres.Column{
+		"username": Account.Username,
+		"email":    Account.Email,
+		"avatar":   Account.Avatar,
+	}
+
+	var f postgres.ColumnList
+	var vs []any
+	for k, v := range updates {
+		f = append(f, columnMap[k])
+		vs = append(vs, v)
+	}
+
+	stmt := Account.UPDATE(f).SET(vs[0], vs[1:]...).WHERE(
 		Account.DiscordID.EQ(postgres.String(discordId)),
 	).RETURNING(Account.AllColumns)
 

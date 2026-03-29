@@ -1,12 +1,13 @@
-CREATE TYPE card_rarity AS ENUM ('common', 'uncommon', 'rare', 'epic', 'legendary');
+CREATE TYPE card_rarity AS ENUM ('common', 'uncommon', 'rare', 'epic', 'legendary', 'prismatic');
 
 CREATE TABLE card (
     id         UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-    mal_id     INT           NOT NULL UNIQUE,
+    mal_id     INT           NOT NULL,
     anime_id   UUID          NOT NULL REFERENCES anime(id),
     rarity     card_rarity   NOT NULL,
     name       VARCHAR(100)  NOT NULL,
     image      VARCHAR(500)  NOT NULL,
+    config     JSONB         NOT NULL DEFAULT '{}',
     created_at TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );

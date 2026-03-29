@@ -17,6 +17,7 @@ const (
 	CardRarity_Rare      CardRarity = "rare"
 	CardRarity_Epic      CardRarity = "epic"
 	CardRarity_Legendary CardRarity = "legendary"
+	CardRarity_Prismatic CardRarity = "prismatic"
 )
 
 var CardRarityAllValues = []CardRarity{
@@ -25,6 +26,7 @@ var CardRarityAllValues = []CardRarity{
 	CardRarity_Rare,
 	CardRarity_Epic,
 	CardRarity_Legendary,
+	CardRarity_Prismatic,
 }
 
 func (e *CardRarity) Scan(value interface{}) error {
@@ -49,6 +51,8 @@ func (e *CardRarity) Scan(value interface{}) error {
 		*e = CardRarity_Epic
 	case "legendary":
 		*e = CardRarity_Legendary
+	case "prismatic":
+		*e = CardRarity_Prismatic
 	default:
 		return errors.New("jet: Invalid scan value '" + enumValue + "' for CardRarity enum")
 	}

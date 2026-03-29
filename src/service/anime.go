@@ -110,11 +110,13 @@ type UpdateAnimeParam struct {
 }
 
 func (s *AnimeService) UpdateOneById(ctx context.Context, id string, param UpdateAnimeParam) (AnimePayload, code.I) {
-	anime, err := s.service.repository.Anime.UpdateOneById(ctx, id, animeRepo.UpdateOneByIdParam{
-		Title:      param.Title,
-		Synopsis:   param.Synopsis,
-		CoverImage: param.CoverImage,
-	})
+	updates := map[string]any{
+		"title":       param.Title,
+		"synopsis":    param.Synopsis,
+		"cover_image": param.CoverImage,
+	}
+
+	anime, err := s.service.repository.Anime.UpdateOneById(ctx, id, updates)
 	if err != nil {
 		if errors.Is(err, qrm.ErrNoRows) {
 			return AnimePayload{}, code.ModelNotFound.Err()

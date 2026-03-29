@@ -25,13 +25,14 @@ func Card(router *gin.RouterGroup, d CardDependency) {
 	r := router.Group("card")
 	auth := r.Use(d.Middleware.AuthJWT)
 	{
+		auth.GET("", handler.FindAll)
 		auth.GET("anime/:animeId", handler.FindAllByAnimeId)
 		auth.GET(":id", handler.FindOneById)
 	}
 	admin := r.Use(d.Middleware.AuthJWT, d.Middleware.AuthAdmin)
 	{
 		admin.POST("", handler.CreateOne)
-		admin.PUT(":id", handler.UpdateOneById)
+		admin.PATCH(":id", handler.UpdateOneById)
 		admin.DELETE(":id", handler.DeleteOneById)
 	}
 }

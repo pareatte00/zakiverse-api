@@ -9,24 +9,24 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-type UpdateOneByIdParam struct {
-	Rarity string
-	Name   string
-	Image  string
-}
-
-func (r *Repository) UpdateOneById(ctx context.Context, id string, param UpdateOneByIdParam) (model.Card, error) {
+func (r *Repository) UpdateOneById(ctx context.Context, id string, updates map[string]any) (model.Card, error) {
 	var dest model.Card
 
-	stmt := Card.UPDATE(
-		Card.Rarity,
-		Card.Name,
-		Card.Image,
-	).SET(
-		param.Rarity,
-		param.Name,
-		param.Image,
-	).WHERE(
+	columnMap := map[string]postgres.Column{
+		"rarity": Card.Rarity,
+		"name":   Card.Name,
+		"image":  Card.Image,
+		"config": Card.Config,
+	}
+
+	var f postgres.ColumnList
+	var vs []any
+	for k, v := range updates {
+		f = append(f, columnMap[k])
+		vs = append(vs, v)
+	}
+
+	stmt := Card.UPDATE(f).SET(vs[0], vs[1:]...).WHERE(
 		Card.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()),
 	).RETURNING(Card.AllColumns)
 
