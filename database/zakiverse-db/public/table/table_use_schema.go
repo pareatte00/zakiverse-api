@@ -12,6 +12,9 @@ package table
 func UseSchema(schema string) {
 	Account = Account.FromSchema(schema)
 	AccountCard = AccountCard.FromSchema(schema)
+	AccountPackPity = AccountPackPity.FromSchema(schema)
 	Anime = Anime.FromSchema(schema)
 	Card = Card.FromSchema(schema)
+	Pack = Pack.FromSchema(schema)
+	PackCard = PackCard.FromSchema(schema)
 }

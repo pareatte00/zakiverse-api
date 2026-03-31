@@ -1,0 +1,35 @@
+package pack
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/zakiverse/zakiverse-api/src/service"
+	"github.com/zakiverse/zakiverse-api/util/binder"
+	"github.com/zakiverse/zakiverse-api/util/response"
+)
+
+type findAllRequest struct {
+	ActiveOnly bool  `json:"active_only"`
+	Page       int64 `json:"page" validate:"required,min=1"`
+	Limit      int64 `json:"limit" validate:"required,min=1,max=100"`
+}
+
+func (h Handler) FindAll(c *gin.Context) {
+	var request findAllRequest
+	if !binder.ShouldBindJson(c, &request) {
+		return
+	}
+
+	payload, codeErr := h.service.Pack.FindAll(c.Request.Context(), service.FindAllPacksParam{
+		ActiveOnly: request.ActiveOnly,
+		Page:       request.Page,
+		Limit:      request.Limit,
+	})
+	if !codeErr.OK() {
+		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
+		return
+	}
+
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+}

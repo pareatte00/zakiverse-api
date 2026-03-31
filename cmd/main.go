@@ -18,6 +18,7 @@ import (
 	"github.com/zakiverse/zakiverse-api/src/outbound"
 	"github.com/zakiverse/zakiverse-api/src/repository"
 	"github.com/zakiverse/zakiverse-api/src/router"
+	"github.com/zakiverse/zakiverse-api/src/scheduler"
 	"github.com/zakiverse/zakiverse-api/src/service"
 )
 
@@ -69,6 +70,8 @@ func main() {
 		Middleware: mw,
 		Service:    serv,
 	})
+
+	scheduler.Start(ctx, repo)
 
 	logger.Info("Services are now running and on standby")
 

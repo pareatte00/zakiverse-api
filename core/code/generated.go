@@ -98,4 +98,10 @@ func init() {
 			locale.EN: "Card already exists",
 		},
 	})
+	reg(PackNotActive, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Pack is not active",
+		},
+	})
 }
