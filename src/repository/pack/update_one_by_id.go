@@ -13,14 +13,19 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, updates map[s
 	var dest model.Pack
 
 	columnMap := map[string]postgres.Column{
+		"code":           Pack.Code,
 		"name":           Pack.Name,
 		"description":    Pack.Description,
 		"image":          Pack.Image,
+		"name_image":     Pack.NameImage,
+		"type":           Pack.Type,
 		"cards_per_pull": Pack.CardsPerPull,
+		"sort_order":     Pack.SortOrder,
 		"is_active":      Pack.IsActive,
 		"open_at":        Pack.OpenAt,
 		"close_at":       Pack.CloseAt,
 		"config":         Pack.Config,
+		"pool_id":        Pack.PoolID,
 	}
 
 	var f postgres.ColumnList

@@ -17,4 +17,5 @@ func UseSchema(schema string) {
 	Card = Card.FromSchema(schema)
 	Pack = Pack.FromSchema(schema)
 	PackCard = PackCard.FromSchema(schema)
+	PackPool = PackPool.FromSchema(schema)
 }

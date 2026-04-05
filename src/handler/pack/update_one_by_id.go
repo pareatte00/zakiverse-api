@@ -15,14 +15,19 @@ type updateOneByIdUri struct {
 }
 
 type updateOneByIdRequest struct {
+	Code         *string             `json:"code" validate:"omitempty"`
 	Name         *string             `json:"name" validate:"omitempty"`
 	Description  *string             `json:"description"`
 	Image        *string             `json:"image" validate:"omitempty"`
+	NameImage    *string             `json:"name_image"`
+	Type         *string             `json:"type" validate:"omitempty,oneof=standard limited event"`
 	CardsPerPull *int32              `json:"cards_per_pull" validate:"omitempty,min=1,max=20"`
+	SortOrder    *int32              `json:"sort_order" validate:"omitempty"`
 	IsActive     *bool               `json:"is_active"`
 	OpenAt       *string             `json:"open_at"`
 	CloseAt      *string             `json:"close_at"`
 	Config       *service.PackConfig `json:"config"`
+	PoolId       *string             `json:"pool_id" validate:"omitempty,uuid"`
 }
 
 func (h Handler) UpdateOneById(c *gin.Context) {
@@ -41,7 +46,7 @@ func (h Handler) UpdateOneById(c *gin.Context) {
 		return
 	}
 
-	updates := patcher.Pick(updateMap, "name", "description", "image", "cards_per_pull", "is_active", "open_at", "close_at", "config")
+	updates := patcher.Pick(updateMap, "code", "name", "description", "image", "name_image", "type", "cards_per_pull", "sort_order", "is_active", "open_at", "close_at", "config", "pool_id")
 
 	payload, codeErr := h.service.Pack.UpdateOneById(c.Request.Context(), uri.Id, updates)
 	if !codeErr.OK() {

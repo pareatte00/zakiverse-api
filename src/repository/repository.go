@@ -10,6 +10,7 @@ import (
 	"github.com/zakiverse/zakiverse-api/src/repository/anime"
 	"github.com/zakiverse/zakiverse-api/src/repository/card"
 	"github.com/zakiverse/zakiverse-api/src/repository/pack"
+	"github.com/zakiverse/zakiverse-api/src/repository/pack_pool"
 )
 
 type Dependency struct {
@@ -22,12 +23,13 @@ type Repository struct {
 	config     config.ConfigConstant
 	credential config.ConfigCredential
 
-	Account          *account.Repository
-	Anime            *anime.Repository
-	Card             *card.Repository
-	AccountCard      *account_card.Repository
-	Pack             *pack.Repository
-	AccountPackPity  *account_pack_pity.Repository
+	Account         *account.Repository
+	Anime           *anime.Repository
+	Card            *card.Repository
+	AccountCard     *account_card.Repository
+	Pack            *pack.Repository
+	AccountPackPity *account_pack_pity.Repository
+	PackPool        *pack_pool.Repository
 }
 
 func New(d Dependency) *Repository {
@@ -41,6 +43,7 @@ func New(d Dependency) *Repository {
 		AccountCard:     account_card.New(d.Database),
 		Pack:            pack.New(d.Database),
 		AccountPackPity: account_pack_pity.New(d.Database),
+		PackPool:        pack_pool.New(d.Database),
 	}
 }
 
@@ -55,5 +58,6 @@ func (r *Repository) Tx(tx *sql.Tx) *Repository {
 		AccountCard:     account_card.New(tx),
 		Pack:            pack.New(tx),
 		AccountPackPity: account_pack_pity.New(tx),
+		PackPool:        pack_pool.New(tx),
 	}
 }

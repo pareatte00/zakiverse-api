@@ -11,10 +11,14 @@ import (
 )
 
 type createOneRequest struct {
+	Code         string             `json:"code" validate:"required"`
 	Name         string             `json:"name" validate:"required"`
 	Description  *string            `json:"description"`
 	Image        string             `json:"image" validate:"required"`
+	NameImage    *string            `json:"name_image"`
+	Type         string             `json:"type" validate:"required,oneof=standard limited event"`
 	CardsPerPull int32              `json:"cards_per_pull" validate:"required,min=1,max=20"`
+	SortOrder    int32              `json:"sort_order"`
 	IsActive     bool               `json:"is_active"`
 	OpenAt       *time.Time         `json:"open_at"`
 	CloseAt      *time.Time         `json:"close_at"`
@@ -28,10 +32,14 @@ func (h Handler) CreateOne(c *gin.Context) {
 	}
 
 	payload, codeErr := h.service.Pack.CreateOne(c.Request.Context(), service.CreatePackParam{
+		Code:         request.Code,
 		Name:         request.Name,
 		Description:  request.Description,
 		Image:        request.Image,
+		NameImage:    request.NameImage,
+		Type:         request.Type,
 		CardsPerPull: request.CardsPerPull,
+		SortOrder:    request.SortOrder,
 		IsActive:     request.IsActive,
 		OpenAt:       request.OpenAt,
 		CloseAt:      request.CloseAt,

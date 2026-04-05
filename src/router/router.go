@@ -57,4 +57,10 @@ func Bind(d Dependency) {
 		Middleware: d.Middleware,
 		Service:    d.Service,
 	})
+	PackPool(v1, PackPoolDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
 }

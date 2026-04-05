@@ -17,6 +17,7 @@ func (r *Repository) FindPendingOpen(ctx context.Context, now time.Time) ([]mode
 		FROM(Pack).
 		WHERE(
 			Pack.IsActive.EQ(postgres.Bool(false)).
+				AND(Pack.PoolID.IS_NULL()).
 				AND(Pack.OpenAt.IS_NOT_NULL()).
 				AND(Pack.OpenAt.LT_EQ(postgres.TimestampzT(now))),
 		)
@@ -36,6 +37,7 @@ func (r *Repository) FindExpired(ctx context.Context, now time.Time) ([]model.Pa
 		FROM(Pack).
 		WHERE(
 			Pack.IsActive.EQ(postgres.Bool(true)).
+				AND(Pack.PoolID.IS_NULL()).
 				AND(Pack.CloseAt.IS_NOT_NULL()).
 				AND(Pack.CloseAt.LT_EQ(postgres.TimestampzT(now))),
 		)

@@ -9,10 +9,16 @@ type Repository struct {
 	db qrm.DB
 }
 
+type CardWithAnime struct {
+	model.Card
+
+	Anime model.Anime
+}
+
 type PackCardWithCard struct {
 	model.PackCard
 
-	Card model.Card
+	Card CardWithAnime
 }
 
 type PackWithCards struct {

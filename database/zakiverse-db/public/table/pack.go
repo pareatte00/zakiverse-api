@@ -17,17 +17,23 @@ type packTable struct {
 	postgres.Table
 
 	// Columns
-	ID           postgres.ColumnString
-	Name         postgres.ColumnString
-	Description  postgres.ColumnString
-	Image        postgres.ColumnString
-	CardsPerPull postgres.ColumnInteger
-	IsActive     postgres.ColumnBool
-	OpenAt       postgres.ColumnTimestampz
-	CloseAt      postgres.ColumnTimestampz
-	Config       postgres.ColumnString
-	CreatedAt    postgres.ColumnTimestampz
-	UpdatedAt    postgres.ColumnTimestampz
+	ID                  postgres.ColumnString
+	Name                postgres.ColumnString
+	Description         postgres.ColumnString
+	Image               postgres.ColumnString
+	CardsPerPull        postgres.ColumnInteger
+	IsActive            postgres.ColumnBool
+	OpenAt              postgres.ColumnTimestampz
+	CloseAt             postgres.ColumnTimestampz
+	Config              postgres.ColumnString
+	CreatedAt           postgres.ColumnTimestampz
+	UpdatedAt           postgres.ColumnTimestampz
+	Code                postgres.ColumnString
+	NameImage           postgres.ColumnString
+	Type                postgres.ColumnString
+	SortOrder           postgres.ColumnInteger
+	PoolID              postgres.ColumnString
+	LastPoolActivatedAt postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -69,37 +75,49 @@ func newPackTable(schemaName, tableName, alias string) *PackTable {
 
 func newPackTableImpl(schemaName, tableName, alias string) packTable {
 	var (
-		IDColumn           = postgres.StringColumn("id")
-		NameColumn         = postgres.StringColumn("name")
-		DescriptionColumn  = postgres.StringColumn("description")
-		ImageColumn        = postgres.StringColumn("image")
-		CardsPerPullColumn = postgres.IntegerColumn("cards_per_pull")
-		IsActiveColumn     = postgres.BoolColumn("is_active")
-		OpenAtColumn       = postgres.TimestampzColumn("open_at")
-		CloseAtColumn      = postgres.TimestampzColumn("close_at")
-		ConfigColumn       = postgres.StringColumn("config")
-		CreatedAtColumn    = postgres.TimestampzColumn("created_at")
-		UpdatedAtColumn    = postgres.TimestampzColumn("updated_at")
-		allColumns         = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns     = postgres.ColumnList{NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn}
-		defaultColumns     = postgres.ColumnList{IDColumn, CardsPerPullColumn, IsActiveColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn}
+		IDColumn                  = postgres.StringColumn("id")
+		NameColumn                = postgres.StringColumn("name")
+		DescriptionColumn         = postgres.StringColumn("description")
+		ImageColumn               = postgres.StringColumn("image")
+		CardsPerPullColumn        = postgres.IntegerColumn("cards_per_pull")
+		IsActiveColumn            = postgres.BoolColumn("is_active")
+		OpenAtColumn              = postgres.TimestampzColumn("open_at")
+		CloseAtColumn             = postgres.TimestampzColumn("close_at")
+		ConfigColumn              = postgres.StringColumn("config")
+		CreatedAtColumn           = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn           = postgres.TimestampzColumn("updated_at")
+		CodeColumn                = postgres.StringColumn("code")
+		NameImageColumn           = postgres.StringColumn("name_image")
+		TypeColumn                = postgres.StringColumn("type")
+		SortOrderColumn           = postgres.IntegerColumn("sort_order")
+		PoolIDColumn              = postgres.StringColumn("pool_id")
+		LastPoolActivatedAtColumn = postgres.TimestampzColumn("last_pool_activated_at")
+		allColumns                = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, NameImageColumn, TypeColumn, SortOrderColumn, PoolIDColumn, LastPoolActivatedAtColumn}
+		mutableColumns            = postgres.ColumnList{NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, NameImageColumn, TypeColumn, SortOrderColumn, PoolIDColumn, LastPoolActivatedAtColumn}
+		defaultColumns            = postgres.ColumnList{IDColumn, CardsPerPullColumn, IsActiveColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, TypeColumn, SortOrderColumn}
 	)
 
 	return packTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:           IDColumn,
-		Name:         NameColumn,
-		Description:  DescriptionColumn,
-		Image:        ImageColumn,
-		CardsPerPull: CardsPerPullColumn,
-		IsActive:     IsActiveColumn,
-		OpenAt:       OpenAtColumn,
-		CloseAt:      CloseAtColumn,
-		Config:       ConfigColumn,
-		CreatedAt:    CreatedAtColumn,
-		UpdatedAt:    UpdatedAtColumn,
+		ID:                  IDColumn,
+		Name:                NameColumn,
+		Description:         DescriptionColumn,
+		Image:               ImageColumn,
+		CardsPerPull:        CardsPerPullColumn,
+		IsActive:            IsActiveColumn,
+		OpenAt:              OpenAtColumn,
+		CloseAt:             CloseAtColumn,
+		Config:              ConfigColumn,
+		CreatedAt:           CreatedAtColumn,
+		UpdatedAt:           UpdatedAtColumn,
+		Code:                CodeColumn,
+		NameImage:           NameImageColumn,
+		Type:                TypeColumn,
+		SortOrder:           SortOrderColumn,
+		PoolID:              PoolIDColumn,
+		LastPoolActivatedAt: LastPoolActivatedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

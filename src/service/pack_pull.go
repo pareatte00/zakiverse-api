@@ -17,13 +17,14 @@ type PullResultPayload struct {
 }
 
 type PulledCardPayload struct {
-	CardId uuid.UUID `json:"card_id"`
-	Rarity string    `json:"rarity"`
-	IsNew  bool      `json:"is_new"`
-	IsPity bool      `json:"is_pity"`
+	CardId     uuid.UUID `json:"card_id"`
+	Rarity     string    `json:"rarity"`
+	IsNew      bool      `json:"is_new"`
+	IsPity     bool      `json:"is_pity"`
+	IsFeatured bool      `json:"is_featured"`
 }
 
-func (s *PackService) Pull(ctx context.Context, accountId string, packId string) (PullResultPayload, code.I) {
+func (s *PackService) Pull(ctx context.Context, accountId string, packId string, mode string) (PullResultPayload, code.I) {
 	// 1. Get pack with config
 	packData, err := s.service.repository.Pack.FindOneById(ctx, packId)
 	if err != nil {
@@ -62,17 +63,21 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string)
 	counters := toPityMap(pityCounters)
 
 	// 5. Pull cards
-	cardsPerPull := int(packData.Pack.CardsPerPull)
+	cardsPerPull := 1
+	if mode == "multi" {
+		cardsPerPull = int(packData.Pack.CardsPerPull)
+	}
 	pulledCards := make([]PulledCardPayload, cardsPerPull)
 
 	for i := range cardsPerPull {
 		rarity, isPity := rollRarity(availableRates, config.Pity, counters)
-		card := rollCard(cardsByRarity[rarity])
+		card, isFeatured := rollCard(cardsByRarity[rarity])
 
 		pulledCards[i] = PulledCardPayload{
-			CardId: card.CardID,
-			Rarity: rarity,
-			IsPity: isPity,
+			CardId:     card.CardID,
+			Rarity:     rarity,
+			IsPity:     isPity,
+			IsFeatured: isFeatured,
 		}
 
 		// Update pity counters: increment all, reset the one we got
@@ -161,8 +166,20 @@ func rollRarity(rates map[string]float64, pity map[string]int, counters map[stri
 	return fallback, false
 }
 
-// rollCard picks a card from the pool using weight-based random.
-func rollCard(cards []pack.PackCardWithRarity) pack.PackCardWithRarity {
+// rollCard picks a card from the pool.
+// Featured cards are checked first against their featured_rate.
+// If no featured card hits, falls back to weight-based random among ALL cards.
+func rollCard(cards []pack.PackCardWithRarity) (pack.PackCardWithRarity, bool) {
+	// 1. Roll featured cards first — each gets an independent roll against its rate
+	for _, c := range cards {
+		if c.IsFeatured && c.FeaturedRate != nil && *c.FeaturedRate > 0 {
+			if rand.Float64() < *c.FeaturedRate {
+				return c, true
+			}
+		}
+	}
+
+	// 2. No featured hit — weight-based random among ALL cards
 	total := 0.0
 	for _, c := range cards {
 		total += c.Weight
@@ -173,9 +190,9 @@ func rollCard(cards []pack.PackCardWithRarity) pack.PackCardWithRarity {
 	for _, c := range cards {
 		cumulative += c.Weight
 		if roll < cumulative {
-			return c
+			return c, false
 		}
 	}
 
-	return cards[len(cards)-1]
+	return cards[len(cards)-1], false
 }

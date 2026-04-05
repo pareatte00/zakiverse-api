@@ -14,8 +14,10 @@ type addCardsUri struct {
 }
 
 type addCardsRequestItem struct {
-	CardId string  `json:"card_id" validate:"required,uuid"`
-	Weight float64 `json:"weight"`
+	CardId       string   `json:"card_id" validate:"required,uuid"`
+	Weight       float64  `json:"weight"`
+	IsFeatured   bool     `json:"is_featured"`
+	FeaturedRate *float64 `json:"featured_rate" validate:"omitempty,min=0,max=1"`
 }
 
 type addCardsRequest struct {
@@ -36,8 +38,10 @@ func (h Handler) AddCards(c *gin.Context) {
 	params := make([]service.AddPackCardsParam, len(request.Cards))
 	for i, card := range request.Cards {
 		params[i] = service.AddPackCardsParam{
-			CardId: card.CardId,
-			Weight: card.Weight,
+			CardId:       card.CardId,
+			Weight:       card.Weight,
+			IsFeatured:   card.IsFeatured,
+			FeaturedRate: card.FeaturedRate,
 		}
 	}
 

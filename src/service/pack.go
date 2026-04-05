@@ -25,24 +25,38 @@ type PackConfig struct {
 
 type PackPayload struct {
 	Id           uuid.UUID         `json:"id"`
+	Code         string            `json:"code"`
 	Name         string            `json:"name"`
 	Description  *string           `json:"description"`
 	Image        string            `json:"image"`
+	NameImage    *string           `json:"name_image"`
+	Type         string            `json:"type"`
 	CardsPerPull int32             `json:"cards_per_pull"`
+	SortOrder    int32             `json:"sort_order"`
 	IsActive     bool              `json:"is_active"`
 	OpenAt       *time.Time        `json:"open_at"`
 	CloseAt      *time.Time        `json:"close_at"`
 	Config       PackConfig        `json:"config"`
+	PoolId       *uuid.UUID        `json:"pool_id"`
+	TotalCards   int64             `json:"total_cards"`
 	Cards        []PackCardPayload `json:"cards,omitempty"`
 }
 
+type PackCardAnimePayload struct {
+	Title      string  `json:"title"`
+	CoverImage *string `json:"cover_image"`
+}
+
 type PackCardPayload struct {
-	Id     uuid.UUID       `json:"id"`
-	CardId uuid.UUID       `json:"card_id"`
-	Weight float64         `json:"weight"`
-	Name   string          `json:"name"`
-	Image  string          `json:"image"`
-	Rarity model.CardRarity `json:"rarity"`
+	Id           uuid.UUID            `json:"id"`
+	CardId       uuid.UUID            `json:"card_id"`
+	Weight       float64              `json:"weight"`
+	IsFeatured   bool                 `json:"is_featured"`
+	FeaturedRate *float64             `json:"featured_rate"`
+	Name         string               `json:"name"`
+	Image        string               `json:"image"`
+	Rarity       model.CardRarity     `json:"rarity"`
+	Anime        PackCardAnimePayload `json:"anime"`
 }
 
 func marshalPackConfig(cfg PackConfig) (string, error) {
@@ -62,14 +76,19 @@ func unmarshalPackConfig(raw string) PackConfig {
 func toPackPayload(pack model.Pack) PackPayload {
 	return PackPayload{
 		Id:           pack.ID,
+		Code:         pack.Code,
 		Name:         pack.Name,
 		Description:  pack.Description,
 		Image:        pack.Image,
+		NameImage:    pack.NameImage,
+		Type:         string(pack.Type),
 		CardsPerPull: pack.CardsPerPull,
+		SortOrder:    pack.SortOrder,
 		IsActive:     pack.IsActive,
 		OpenAt:       pack.OpenAt,
 		CloseAt:      pack.CloseAt,
 		Config:       unmarshalPackConfig(pack.Config),
+		PoolId:       pack.PoolID,
 	}
 }
 
@@ -77,22 +96,32 @@ func toPackCardPayloads(cards []packRepo.PackCardWithCard) []PackCardPayload {
 	payload := make([]PackCardPayload, len(cards))
 	for i, c := range cards {
 		payload[i] = PackCardPayload{
-			Id:     c.ID,
-			CardId: c.CardID,
-			Weight: c.Weight,
-			Name:   c.Card.Name,
-			Image:  c.Card.Image,
-			Rarity: c.Card.Rarity,
+			Id:           c.ID,
+			CardId:       c.CardID,
+			Weight:       c.Weight,
+			IsFeatured:   c.IsFeatured,
+			FeaturedRate: c.FeaturedRate,
+			Name:         c.Card.Name,
+			Image:        c.Card.Image,
+			Rarity:       c.Card.Rarity,
+			Anime: PackCardAnimePayload{
+				Title:      c.Card.Anime.Title,
+				CoverImage: c.Card.Anime.CoverImage,
+			},
 		}
 	}
 	return payload
 }
 
 type CreatePackParam struct {
+	Code         string
 	Name         string
 	Description  *string
 	Image        string
+	NameImage    *string
+	Type         string
 	CardsPerPull int32
+	SortOrder    int32
 	IsActive     bool
 	OpenAt       *time.Time
 	CloseAt      *time.Time
@@ -106,10 +135,14 @@ func (s *PackService) CreateOne(ctx context.Context, param CreatePackParam) (Pac
 	}
 
 	pack, err := s.service.repository.Pack.CreateOne(ctx, packRepo.CreateOneParam{
+		Code:         param.Code,
 		Name:         param.Name,
 		Description:  param.Description,
 		Image:        param.Image,
+		NameImage:    param.NameImage,
+		Type:         param.Type,
 		CardsPerPull: param.CardsPerPull,
+		SortOrder:    param.SortOrder,
 		IsActive:     param.IsActive,
 		OpenAt:       param.OpenAt,
 		CloseAt:      param.CloseAt,
@@ -133,12 +166,14 @@ func (s *PackService) FindOneById(ctx context.Context, id string) (PackPayload, 
 
 	payload := toPackPayload(result.Pack)
 	payload.Cards = toPackCardPayloads(result.Cards)
+	payload.TotalCards = int64(len(result.Cards))
 
 	return payload, code.OK()
 }
 
 type FindAllPacksParam struct {
 	ActiveOnly bool
+	Type       string
 	Page       int64
 	Limit      int64
 }
@@ -148,6 +183,7 @@ func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]P
 
 	packs, err := s.service.repository.Pack.FindAll(ctx, packRepo.FindAllParam{
 		ActiveOnly: param.ActiveOnly,
+		Type:       param.Type,
 		Limit:      param.Limit,
 		Offset:     offset,
 	})
@@ -157,7 +193,8 @@ func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]P
 
 	payload := make([]PackPayload, len(packs))
 	for i, p := range packs {
-		payload[i] = toPackPayload(p)
+		payload[i] = toPackPayload(p.Pack)
+		payload[i].TotalCards = p.TotalCards
 	}
 
 	return payload, code.OK()
@@ -193,8 +230,10 @@ func (s *PackService) DeleteOneById(ctx context.Context, id string) code.I {
 }
 
 type AddPackCardsParam struct {
-	CardId string
-	Weight float64
+	CardId       string
+	Weight       float64
+	IsFeatured   bool
+	FeaturedRate *float64
 }
 
 func (s *PackService) AddCards(ctx context.Context, packId string, params []AddPackCardsParam) ([]PackCardPayload, code.I) {
@@ -205,9 +244,11 @@ func (s *PackService) AddCards(ctx context.Context, packId string, params []AddP
 			weight = 1.0
 		}
 		repoParams[i] = packRepo.AddCardParam{
-			PackId: packId,
-			CardId: p.CardId,
-			Weight: weight,
+			PackId:       packId,
+			CardId:       p.CardId,
+			Weight:       weight,
+			IsFeatured:   p.IsFeatured,
+			FeaturedRate: p.FeaturedRate,
 		}
 	}
 
@@ -219,9 +260,11 @@ func (s *PackService) AddCards(ctx context.Context, packId string, params []AddP
 	payload := make([]PackCardPayload, len(cards))
 	for i, c := range cards {
 		payload[i] = PackCardPayload{
-			Id:     c.ID,
-			CardId: c.CardID,
-			Weight: c.Weight,
+			Id:           c.ID,
+			CardId:       c.CardID,
+			Weight:       c.Weight,
+			IsFeatured:   c.IsFeatured,
+			FeaturedRate: c.FeaturedRate,
 		}
 	}
 

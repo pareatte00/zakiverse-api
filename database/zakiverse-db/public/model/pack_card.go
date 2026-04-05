@@ -12,8 +12,10 @@ import (
 )
 
 type PackCard struct {
-	ID     uuid.UUID `sql:"primary_key"`
-	PackID uuid.UUID
-	CardID uuid.UUID
-	Weight float64
+	ID           uuid.UUID `sql:"primary_key"`
+	PackID       uuid.UUID
+	CardID       uuid.UUID
+	Weight       float64
+	IsFeatured   bool
+	FeaturedRate *float64
 }

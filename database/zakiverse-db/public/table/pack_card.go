@@ -17,10 +17,12 @@ type packCardTable struct {
 	postgres.Table
 
 	// Columns
-	ID     postgres.ColumnString
-	PackID postgres.ColumnString
-	CardID postgres.ColumnString
-	Weight postgres.ColumnFloat
+	ID           postgres.ColumnString
+	PackID       postgres.ColumnString
+	CardID       postgres.ColumnString
+	Weight       postgres.ColumnFloat
+	IsFeatured   postgres.ColumnBool
+	FeaturedRate postgres.ColumnFloat
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -62,23 +64,27 @@ func newPackCardTable(schemaName, tableName, alias string) *PackCardTable {
 
 func newPackCardTableImpl(schemaName, tableName, alias string) packCardTable {
 	var (
-		IDColumn       = postgres.StringColumn("id")
-		PackIDColumn   = postgres.StringColumn("pack_id")
-		CardIDColumn   = postgres.StringColumn("card_id")
-		WeightColumn   = postgres.FloatColumn("weight")
-		allColumns     = postgres.ColumnList{IDColumn, PackIDColumn, CardIDColumn, WeightColumn}
-		mutableColumns = postgres.ColumnList{PackIDColumn, CardIDColumn, WeightColumn}
-		defaultColumns = postgres.ColumnList{IDColumn, WeightColumn}
+		IDColumn           = postgres.StringColumn("id")
+		PackIDColumn       = postgres.StringColumn("pack_id")
+		CardIDColumn       = postgres.StringColumn("card_id")
+		WeightColumn       = postgres.FloatColumn("weight")
+		IsFeaturedColumn   = postgres.BoolColumn("is_featured")
+		FeaturedRateColumn = postgres.FloatColumn("featured_rate")
+		allColumns         = postgres.ColumnList{IDColumn, PackIDColumn, CardIDColumn, WeightColumn, IsFeaturedColumn, FeaturedRateColumn}
+		mutableColumns     = postgres.ColumnList{PackIDColumn, CardIDColumn, WeightColumn, IsFeaturedColumn, FeaturedRateColumn}
+		defaultColumns     = postgres.ColumnList{IDColumn, WeightColumn, IsFeaturedColumn}
 	)
 
 	return packCardTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:     IDColumn,
-		PackID: PackIDColumn,
-		CardID: CardIDColumn,
-		Weight: WeightColumn,
+		ID:           IDColumn,
+		PackID:       PackIDColumn,
+		CardID:       CardIDColumn,
+		Weight:       WeightColumn,
+		IsFeatured:   IsFeaturedColumn,
+		FeaturedRate: FeaturedRateColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

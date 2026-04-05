@@ -10,9 +10,10 @@ import (
 )
 
 type findAllRequest struct {
-	ActiveOnly bool  `json:"active_only"`
-	Page       int64 `json:"page" validate:"required,min=1"`
-	Limit      int64 `json:"limit" validate:"required,min=1,max=100"`
+	ActiveOnly bool   `json:"active_only"`
+	Type       string `json:"type" validate:"omitempty,oneof=standard limited event"`
+	Page       int64  `json:"page" validate:"required,min=1"`
+	Limit      int64  `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindAll(c *gin.Context) {
@@ -23,6 +24,7 @@ func (h Handler) FindAll(c *gin.Context) {
 
 	payload, codeErr := h.service.Pack.FindAll(c.Request.Context(), service.FindAllPacksParam{
 		ActiveOnly: request.ActiveOnly,
+		Type:       request.Type,
 		Page:       request.Page,
 		Limit:      request.Limit,
 	})
