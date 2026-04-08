@@ -27,6 +27,7 @@ func Pack(router *gin.RouterGroup, d PackDependency) {
 	{
 		auth.GET("", handler.FindAll)
 		auth.GET(":id", handler.FindOneById)
+		auth.GET(":id/pity", handler.GetPityInfo)
 		auth.POST(":id/pull", handler.Pull)
 	}
 	admin := r.Use(d.Middleware.AuthJWT, d.Middleware.AuthAdmin)
