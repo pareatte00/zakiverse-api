@@ -17,8 +17,11 @@ type FindAllByAnimeIdParam struct {
 func (r *Repository) FindAllByAnimeId(ctx context.Context, param FindAllByAnimeIdParam) ([]CardWithAnime, error) {
 	var dest []CardWithAnime
 
-	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns).
-		FROM(Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID))).
+	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns, CardTag.AllColumns).
+		FROM(
+			Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID)).
+				LEFT_JOIN(CardTag, CardTag.ID.EQ(Card.TagID)),
+		).
 		WHERE(Card.AnimeID.EQ(postgres.CAST(postgres.String(param.AnimeId)).AS_UUID())).
 		ORDER_BY(Card.Name.ASC()).
 		LIMIT(param.Limit).

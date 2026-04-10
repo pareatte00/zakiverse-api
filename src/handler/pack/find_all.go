@@ -9,24 +9,20 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
-type findAllRequest struct {
-	ActiveOnly bool   `json:"active_only"`
-	Type       string `json:"type" validate:"omitempty,oneof=standard limited event"`
-	Page       int64  `json:"page" validate:"required,min=1"`
-	Limit      int64  `json:"limit" validate:"required,min=1,max=100"`
+type findAllQuery struct {
+	Page  int64 `form:"page" validate:"required,min=1"`
+	Limit int64 `form:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindAll(c *gin.Context) {
-	var request findAllRequest
-	if !binder.ShouldBindJson(c, &request) {
+	var query findAllQuery
+	if !binder.ShouldBindQuery(c, &query) {
 		return
 	}
 
 	payload, codeErr := h.service.Pack.FindAll(c.Request.Context(), service.FindAllPacksParam{
-		ActiveOnly: request.ActiveOnly,
-		Type:       request.Type,
-		Page:       request.Page,
-		Limit:      request.Limit,
+		Page:  query.Page,
+		Limit: query.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

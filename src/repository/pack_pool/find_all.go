@@ -10,16 +10,29 @@ import (
 )
 
 type FindAllParam struct {
-	Limit  int64
-	Offset int64
+	BannerType string
+	ActiveOnly bool
+	Limit      int64
+	Offset     int64
 }
 
 func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]model.PackPool, error) {
 	var dest []model.PackPool
 
+	condition := postgres.Bool(true)
+
+	if param.BannerType != "" {
+		condition = condition.AND(PackPool.BannerType.EQ(postgres.NewEnumValue(param.BannerType)))
+	}
+
+	if param.ActiveOnly {
+		condition = condition.AND(PackPool.IsActive.EQ(postgres.Bool(true)))
+	}
+
 	stmt := postgres.SELECT(PackPool.AllColumns).
 		FROM(PackPool).
-		ORDER_BY(PackPool.CreatedAt.DESC()).
+		WHERE(condition).
+		ORDER_BY(PackPool.SortOrder.ASC(), PackPool.CreatedAt.DESC()).
 		LIMIT(param.Limit).
 		OFFSET(param.Offset)
 

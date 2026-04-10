@@ -10,10 +10,8 @@ import (
 )
 
 type FindAllParam struct {
-	ActiveOnly bool
-	Type       string
-	Limit      int64
-	Offset     int64
+	Limit  int64
+	Offset int64
 }
 
 type PackWithCardCount struct {
@@ -25,20 +23,11 @@ type PackWithCardCount struct {
 func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]PackWithCardCount, error) {
 	var dest []PackWithCardCount
 
-	condition := postgres.Bool(true)
-	if param.ActiveOnly {
-		condition = condition.AND(Pack.IsActive.EQ(postgres.Bool(true)))
-	}
-	if param.Type != "" {
-		condition = condition.AND(Pack.Type.EQ(postgres.NewEnumValue(param.Type)))
-	}
-
 	stmt := postgres.SELECT(
 		Pack.AllColumns,
 		postgres.COUNT(PackCard.ID).AS("pack_with_card_count.total_cards"),
 	).
 		FROM(Pack.LEFT_JOIN(PackCard, PackCard.PackID.EQ(Pack.ID))).
-		WHERE(condition).
 		GROUP_BY(Pack.ID).
 		ORDER_BY(Pack.SortOrder.ASC(), Pack.CreatedAt.DESC()).
 		LIMIT(param.Limit).

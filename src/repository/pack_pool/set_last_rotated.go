@@ -9,9 +9,9 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-func (r *Repository) SetLastRotated(ctx context.Context, id string, now time.Time) error {
-	stmt := PackPool.UPDATE(PackPool.LastRotatedAt).
-		SET(now).
+func (r *Repository) SetLastRotated(ctx context.Context, id string, now time.Time, nextRotationAt *time.Time) error {
+	stmt := PackPool.UPDATE(PackPool.LastRotatedAt, PackPool.NextRotationAt).
+		SET(now, nextRotationAt).
 		WHERE(PackPool.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	_, err := stmt.ExecContext(ctx, r.db)

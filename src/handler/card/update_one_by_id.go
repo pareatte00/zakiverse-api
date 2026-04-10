@@ -11,7 +11,7 @@ import (
 )
 
 type updateOneByIdUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 type updateOneByIdRequest struct {
@@ -19,6 +19,7 @@ type updateOneByIdRequest struct {
 	Name   *string             `json:"name" validate:"omitempty"`
 	Image  *string             `json:"image" validate:"omitempty"`
 	Config *service.CardConfig `json:"config"`
+	TagId  *string             `json:"tag_id" validate:"omitempty,uuid"`
 }
 
 func (h Handler) UpdateOneById(c *gin.Context) {
@@ -37,9 +38,9 @@ func (h Handler) UpdateOneById(c *gin.Context) {
 		return
 	}
 
-	updates := patcher.Pick(updateMap, "rarity", "name", "image", "config")
+	updates := patcher.Pick(updateMap, "rarity", "name", "image", "config", "tag_id")
 
-	payload, codeErr := h.service.Card.UpdateOneById(c.Request.Context(), uri.Id, updates)
+	payload, codeErr := h.service.Card.UpdateOneById(c.Request.Context(), uri.ID, updates)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/zakiverse/zakiverse-api/src/repository"
-	"github.com/zakiverse/zakiverse-api/src/scheduler/pack"
 	"github.com/zakiverse/zakiverse-api/src/scheduler/pool"
 )
 
@@ -14,5 +13,5 @@ const (
 )
 
 func Start(ctx context.Context, repository *repository.Repository) {
-	go New(t1m, pack.NewScheduler(repository), pool.NewScheduler(repository)).Start(ctx)
+	go New(t1m, pool.NewScheduler(repository)).Start(ctx)
 }

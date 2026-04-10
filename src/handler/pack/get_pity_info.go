@@ -10,7 +10,7 @@ import (
 )
 
 type getPityInfoUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 func (h Handler) GetPityInfo(c *gin.Context) {
@@ -21,7 +21,7 @@ func (h Handler) GetPityInfo(c *gin.Context) {
 
 	accountId := c.GetString(cst.MiddlewareKeyAccountId)
 
-	payload, codeErr := h.service.Pack.GetPityInfo(c.Request.Context(), accountId, uri.Id)
+	payload, codeErr := h.service.Pack.GetPityInfo(c.Request.Context(), accountId, uri.ID)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

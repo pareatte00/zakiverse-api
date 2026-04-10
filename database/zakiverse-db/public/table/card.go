@@ -26,6 +26,7 @@ type cardTable struct {
 	UpdatedAt postgres.ColumnTimestampz
 	Rarity    postgres.ColumnString
 	Config    postgres.ColumnString
+	TagID     postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -76,8 +77,9 @@ func newCardTableImpl(schemaName, tableName, alias string) cardTable {
 		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		RarityColumn    = postgres.StringColumn("rarity")
 		ConfigColumn    = postgres.StringColumn("config")
-		allColumns      = postgres.ColumnList{IDColumn, MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn}
-		mutableColumns  = postgres.ColumnList{MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn}
+		TagIDColumn     = postgres.StringColumn("tag_id")
+		allColumns      = postgres.ColumnList{IDColumn, MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn, TagIDColumn}
+		mutableColumns  = postgres.ColumnList{MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn, TagIDColumn}
 		defaultColumns  = postgres.ColumnList{IDColumn, CreatedAtColumn, UpdatedAtColumn, ConfigColumn}
 	)
 
@@ -94,6 +96,7 @@ func newCardTableImpl(schemaName, tableName, alias string) cardTable {
 		UpdatedAt: UpdatedAtColumn,
 		Rarity:    RarityColumn,
 		Config:    ConfigColumn,
+		TagID:     TagIDColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

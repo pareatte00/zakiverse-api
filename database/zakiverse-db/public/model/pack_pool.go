@@ -13,12 +13,24 @@ import (
 )
 
 type PackPool struct {
-	ID            uuid.UUID `sql:"primary_key"`
-	Name          string
-	Description   *string
-	ActiveCount   int32
-	RotationDay   int32
-	LastRotatedAt *time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID                uuid.UUID `sql:"primary_key"`
+	Name              string
+	Description       *string
+	ActiveCount       int32
+	RotationDay       *int32
+	LastRotatedAt     *time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Image             *string
+	BannerType        BannerType
+	SortOrder         int32
+	IsActive          bool
+	OpenAt            *time.Time
+	CloseAt           *time.Time
+	RotationType      RotationType
+	RotationInterval  int32
+	RotationHour      int32
+	RotationOrderMode RotationOrderMode
+	NextRotationAt    *time.Time
+	PreviewDays       int32
 }

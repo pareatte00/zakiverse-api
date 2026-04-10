@@ -11,6 +11,7 @@ import (
 type FindAllParam struct {
 	Search string
 	Rarity string
+	TagId  string
 	Sort   string
 	Order  string
 	Limit  int64
@@ -34,6 +35,10 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]CardWit
 		condition = condition.AND(Card.Rarity.EQ(postgres.NewEnumValue(param.Rarity)))
 	}
 
+	if param.TagId != "" {
+		condition = condition.AND(Card.TagID.EQ(postgres.CAST(postgres.String(param.TagId)).AS_UUID()))
+	}
+
 	sortColumn := map[string]postgres.Column{
 		"name":   Card.Name,
 		"rarity": Card.Rarity,
@@ -54,8 +59,11 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]CardWit
 		orderClauses = append(orderClauses, Card.Name.ASC())
 	}
 
-	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns).
-		FROM(Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID))).
+	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns, CardTag.AllColumns).
+		FROM(
+			Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID)).
+				LEFT_JOIN(CardTag, CardTag.ID.EQ(Card.TagID)),
+		).
 		WHERE(condition).
 		ORDER_BY(orderClauses...).
 		LIMIT(param.Limit).

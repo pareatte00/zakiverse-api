@@ -27,6 +27,7 @@ type Service struct {
 	Anime       *AnimeService
 	Card        *CardService
 	AccountCard *AccountCardService
+	CardTag     *CardTagService
 	Pack        *PackService
 	PackPool    *PackPoolService
 }
@@ -43,6 +44,7 @@ func New(d Dependency) *Service {
 	service.Account = &AccountService{service: service}
 	service.Anime = &AnimeService{service: service}
 	service.Card = &CardService{service: service}
+	service.CardTag = &CardTagService{service: service}
 	service.AccountCard = &AccountCardService{service: service}
 	service.Pack = &PackService{service: service}
 	service.PackPool = &PackPoolService{service: service}

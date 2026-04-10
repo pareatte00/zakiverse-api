@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
+	historyRepo "github.com/zakiverse/zakiverse-api/src/repository/account_pull_history"
 	pityRepo "github.com/zakiverse/zakiverse-api/src/repository/account_pack_pity"
 	"github.com/zakiverse/zakiverse-api/src/repository/pack"
 	"github.com/zakiverse/zakiverse-api/util/trace"
@@ -31,8 +32,32 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string,
 		return PullResultPayload{}, code.ModelNotFound.Err()
 	}
 
-	if !packData.Pack.IsActive {
-		return PullResultPayload{}, code.PackNotActive.Err()
+	// 1a. Pool-based validation
+	pool, err := s.service.repository.PackPool.FindOneById(ctx, packData.Pack.PoolID.String())
+	if err != nil {
+		return PullResultPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	if !pool.IsActive {
+		return PullResultPayload{}, code.BannerNotActive.Err()
+	}
+
+	// 1b. Rotation check — if pool rotates, ensure this pack is in current rotation
+	if pool.RotationType != model.RotationType_None {
+		currentPacks, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
+		if err != nil {
+			return PullResultPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		}
+		inRotation := false
+		for _, p := range currentPacks {
+			if p.ID.String() == packId {
+				inRotation = true
+				break
+			}
+		}
+		if !inRotation {
+			return PullResultPayload{}, code.PackNotInRotation.Err()
+		}
 	}
 
 	config := unmarshalPackConfig(packData.Pack.Config)
@@ -114,6 +139,24 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string,
 			pulledCards[i].IsNew = true
 		}
 		// If already owned, IsNew stays false — no error
+	}
+
+	// 8. Save pull history
+	historyParams := make([]historyRepo.CreateManyParam, len(pulledCards))
+	for i, pulled := range pulledCards {
+		historyParams[i] = historyRepo.CreateManyParam{
+			AccountId:  accountId,
+			PackId:     packId,
+			CardId:     pulled.CardId.String(),
+			Rarity:     pulled.Rarity,
+			IsPity:     pulled.IsPity,
+			IsFeatured: pulled.IsFeatured,
+			IsNew:      pulled.IsNew,
+		}
+	}
+	if err := s.service.repository.AccountPullHistory.CreateMany(ctx, historyParams); err != nil {
+		// Log but don't fail the pull - history is non-critical
+		// The cards are already granted
 	}
 
 	return PullResultPayload{Cards: pulledCards}, code.OK()

@@ -9,7 +9,7 @@ import (
 )
 
 type deleteOneByIdUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 func (h Handler) DeleteOneById(c *gin.Context) {
@@ -18,7 +18,7 @@ func (h Handler) DeleteOneById(c *gin.Context) {
 		return
 	}
 
-	codeErr := h.service.Card.DeleteOneById(c.Request.Context(), uri.Id)
+	codeErr := h.service.Card.DeleteOneById(c.Request.Context(), uri.ID)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

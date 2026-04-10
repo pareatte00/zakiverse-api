@@ -23,11 +23,16 @@ func PackPool(router *gin.RouterGroup, d PackPoolDependency) {
 	})
 
 	r := router.Group("pack-pool")
+	auth := r.Use(d.Middleware.AuthJWT)
+	{
+		auth.GET("active", handler.FindActiveBanners)
+		auth.GET(":id", handler.FindOneWithPacks)
+	}
 	admin := r.Use(d.Middleware.AuthJWT, d.Middleware.AuthAdmin)
 	{
 		admin.GET("", handler.FindAll)
-		admin.GET(":id", handler.FindOneById)
 		admin.POST("", handler.CreateOne)
+		admin.GET(":id/detail", handler.FindOneById)
 		admin.PATCH(":id", handler.UpdateOneById)
 		admin.DELETE(":id", handler.DeleteOneById)
 	}

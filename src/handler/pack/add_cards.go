@@ -10,7 +10,7 @@ import (
 )
 
 type addCardsUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 type addCardsRequestItem struct {
@@ -45,7 +45,7 @@ func (h Handler) AddCards(c *gin.Context) {
 		}
 	}
 
-	payload, codeErr := h.service.Pack.AddCards(c.Request.Context(), uri.Id, params)
+	payload, codeErr := h.service.Pack.AddCards(c.Request.Context(), uri.ID, params)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

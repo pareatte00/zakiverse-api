@@ -11,8 +11,11 @@ import (
 func (r *Repository) FindOneById(ctx context.Context, id string) (CardWithAnime, error) {
 	var dest CardWithAnime
 
-	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns).
-		FROM(Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID))).
+	stmt := postgres.SELECT(Card.AllColumns, Anime.AllColumns, CardTag.AllColumns).
+		FROM(
+			Card.INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID)).
+				LEFT_JOIN(CardTag, CardTag.ID.EQ(Card.TagID)),
+		).
 		WHERE(Card.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

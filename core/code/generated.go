@@ -104,4 +104,16 @@ func init() {
 			locale.EN: "Pack is not active",
 		},
 	})
+	reg(BannerNotActive, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Banner is not active",
+		},
+	})
+	reg(PackNotInRotation, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Pack is not in current rotation",
+		},
+	})
 }

@@ -2,26 +2,24 @@ package pack
 
 import (
 	"context"
-	"time"
 
+	"github.com/go-jet/jet/v2/postgres"
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
 	. "github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/table"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
 type CreateOneParam struct {
-	Code         string
-	Name         string
-	Description  *string
-	Image        string
-	NameImage    *string
-	Type         string
-	CardsPerPull int32
-	SortOrder    int32
-	IsActive     bool
-	OpenAt       *time.Time
-	CloseAt      *time.Time
-	Config       string
+	Code          string
+	Name          string
+	Description   *string
+	Image         string
+	NameImage     *string
+	CardsPerPull  int32
+	SortOrder     int32
+	Config        string
+	PoolId        string
+	RotationOrder *int32
 }
 
 func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model.Pack, error) {
@@ -33,26 +31,22 @@ func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model
 		Pack.Description,
 		Pack.Image,
 		Pack.NameImage,
-		Pack.Type,
 		Pack.CardsPerPull,
 		Pack.SortOrder,
-		Pack.IsActive,
-		Pack.OpenAt,
-		Pack.CloseAt,
 		Pack.Config,
+		Pack.PoolID,
+		Pack.RotationOrder,
 	).VALUES(
 		param.Code,
 		param.Name,
 		param.Description,
 		param.Image,
 		param.NameImage,
-		param.Type,
 		param.CardsPerPull,
 		param.SortOrder,
-		param.IsActive,
-		param.OpenAt,
-		param.CloseAt,
 		param.Config,
+		postgres.CAST(postgres.String(param.PoolId)).AS_UUID(),
+		param.RotationOrder,
 	).RETURNING(Pack.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

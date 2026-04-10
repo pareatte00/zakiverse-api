@@ -1,3 +1,10 @@
+CREATE TABLE card_tag (
+    id         UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    name       VARCHAR(50)   NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
 CREATE TYPE card_rarity AS ENUM ('common', 'uncommon', 'rare', 'epic', 'legendary', 'prismatic');
 
 CREATE TABLE card (
@@ -8,6 +15,7 @@ CREATE TABLE card (
     name       VARCHAR(100)  NOT NULL,
     image      VARCHAR(500)  NOT NULL,
     config     JSONB         NOT NULL DEFAULT '{}',
+    tag_id     UUID          REFERENCES card_tag(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );

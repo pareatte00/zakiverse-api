@@ -15,6 +15,7 @@ type CreateOneParam struct {
 	Name    string
 	Image   string
 	Config  string
+	TagId   *string
 }
 
 func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model.Card, error) {
@@ -27,6 +28,7 @@ func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model
 		Card.Name,
 		Card.Image,
 		Card.Config,
+		Card.TagID,
 	).VALUES(
 		param.MalId,
 		param.AnimeId,
@@ -34,6 +36,7 @@ func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model
 		param.Name,
 		param.Image,
 		param.Config,
+		param.TagId,
 	).RETURNING(Card.AllColumns)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

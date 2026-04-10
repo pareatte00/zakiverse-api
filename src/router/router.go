@@ -51,6 +51,12 @@ func Bind(d Dependency) {
 		Middleware: d.Middleware,
 		Service:    d.Service,
 	})
+	CardTag(v1, CardTagDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
 	Pack(v1, PackDependency{
 		Config:     d.Config,
 		Credential: d.Credential,

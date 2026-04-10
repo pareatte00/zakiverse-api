@@ -22,18 +22,15 @@ type packTable struct {
 	Description         postgres.ColumnString
 	Image               postgres.ColumnString
 	CardsPerPull        postgres.ColumnInteger
-	IsActive            postgres.ColumnBool
-	OpenAt              postgres.ColumnTimestampz
-	CloseAt             postgres.ColumnTimestampz
 	Config              postgres.ColumnString
 	CreatedAt           postgres.ColumnTimestampz
 	UpdatedAt           postgres.ColumnTimestampz
 	Code                postgres.ColumnString
 	NameImage           postgres.ColumnString
-	Type                postgres.ColumnString
 	SortOrder           postgres.ColumnInteger
 	PoolID              postgres.ColumnString
 	LastPoolActivatedAt postgres.ColumnTimestampz
+	RotationOrder       postgres.ColumnInteger
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -80,21 +77,18 @@ func newPackTableImpl(schemaName, tableName, alias string) packTable {
 		DescriptionColumn         = postgres.StringColumn("description")
 		ImageColumn               = postgres.StringColumn("image")
 		CardsPerPullColumn        = postgres.IntegerColumn("cards_per_pull")
-		IsActiveColumn            = postgres.BoolColumn("is_active")
-		OpenAtColumn              = postgres.TimestampzColumn("open_at")
-		CloseAtColumn             = postgres.TimestampzColumn("close_at")
 		ConfigColumn              = postgres.StringColumn("config")
 		CreatedAtColumn           = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn           = postgres.TimestampzColumn("updated_at")
 		CodeColumn                = postgres.StringColumn("code")
 		NameImageColumn           = postgres.StringColumn("name_image")
-		TypeColumn                = postgres.StringColumn("type")
 		SortOrderColumn           = postgres.IntegerColumn("sort_order")
 		PoolIDColumn              = postgres.StringColumn("pool_id")
 		LastPoolActivatedAtColumn = postgres.TimestampzColumn("last_pool_activated_at")
-		allColumns                = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, NameImageColumn, TypeColumn, SortOrderColumn, PoolIDColumn, LastPoolActivatedAtColumn}
-		mutableColumns            = postgres.ColumnList{NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, NameImageColumn, TypeColumn, SortOrderColumn, PoolIDColumn, LastPoolActivatedAtColumn}
-		defaultColumns            = postgres.ColumnList{IDColumn, CardsPerPullColumn, IsActiveColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, TypeColumn, SortOrderColumn}
+		RotationOrderColumn       = postgres.IntegerColumn("rotation_order")
+		allColumns                = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, NameImageColumn, SortOrderColumn, PoolIDColumn, LastPoolActivatedAtColumn, RotationOrderColumn}
+		mutableColumns            = postgres.ColumnList{NameColumn, DescriptionColumn, ImageColumn, CardsPerPullColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, NameImageColumn, SortOrderColumn, PoolIDColumn, LastPoolActivatedAtColumn, RotationOrderColumn}
+		defaultColumns            = postgres.ColumnList{IDColumn, CardsPerPullColumn, ConfigColumn, CreatedAtColumn, UpdatedAtColumn, CodeColumn, SortOrderColumn}
 	)
 
 	return packTable{
@@ -106,18 +100,15 @@ func newPackTableImpl(schemaName, tableName, alias string) packTable {
 		Description:         DescriptionColumn,
 		Image:               ImageColumn,
 		CardsPerPull:        CardsPerPullColumn,
-		IsActive:            IsActiveColumn,
-		OpenAt:              OpenAtColumn,
-		CloseAt:             CloseAtColumn,
 		Config:              ConfigColumn,
 		CreatedAt:           CreatedAtColumn,
 		UpdatedAt:           UpdatedAtColumn,
 		Code:                CodeColumn,
 		NameImage:           NameImageColumn,
-		Type:                TypeColumn,
 		SortOrder:           SortOrderColumn,
 		PoolID:              PoolIDColumn,
 		LastPoolActivatedAt: LastPoolActivatedAtColumn,
+		RotationOrder:       RotationOrderColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

@@ -9,10 +9,9 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-// ActivateWithPoolTimestamp sets is_active=true and last_pool_activated_at=now for a pack.
-func (r *Repository) ActivateWithPoolTimestamp(ctx context.Context, id string, now time.Time) error {
-	stmt := Pack.UPDATE(Pack.IsActive, Pack.LastPoolActivatedAt).
-		SET(true, now).
+func (r *Repository) SetPoolActivatedAt(ctx context.Context, id string, now time.Time) error {
+	stmt := Pack.UPDATE(Pack.LastPoolActivatedAt).
+		SET(now).
 		WHERE(Pack.ID.EQ(postgres.CAST(postgres.String(id)).AS_UUID()))
 
 	_, err := stmt.ExecContext(ctx, r.db)

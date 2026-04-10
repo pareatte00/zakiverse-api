@@ -17,14 +17,26 @@ type packPoolTable struct {
 	postgres.Table
 
 	// Columns
-	ID            postgres.ColumnString
-	Name          postgres.ColumnString
-	Description   postgres.ColumnString
-	ActiveCount   postgres.ColumnInteger
-	RotationDay   postgres.ColumnInteger
-	LastRotatedAt postgres.ColumnTimestampz
-	CreatedAt     postgres.ColumnTimestampz
-	UpdatedAt     postgres.ColumnTimestampz
+	ID                postgres.ColumnString
+	Name              postgres.ColumnString
+	Description       postgres.ColumnString
+	ActiveCount       postgres.ColumnInteger
+	RotationDay       postgres.ColumnInteger
+	LastRotatedAt     postgres.ColumnTimestampz
+	CreatedAt         postgres.ColumnTimestampz
+	UpdatedAt         postgres.ColumnTimestampz
+	Image             postgres.ColumnString
+	BannerType        postgres.ColumnString
+	SortOrder         postgres.ColumnInteger
+	IsActive          postgres.ColumnBool
+	OpenAt            postgres.ColumnTimestampz
+	CloseAt           postgres.ColumnTimestampz
+	RotationType      postgres.ColumnString
+	RotationInterval  postgres.ColumnInteger
+	RotationHour      postgres.ColumnInteger
+	RotationOrderMode postgres.ColumnString
+	NextRotationAt    postgres.ColumnTimestampz
+	PreviewDays       postgres.ColumnInteger
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -66,31 +78,55 @@ func newPackPoolTable(schemaName, tableName, alias string) *PackPoolTable {
 
 func newPackPoolTableImpl(schemaName, tableName, alias string) packPoolTable {
 	var (
-		IDColumn            = postgres.StringColumn("id")
-		NameColumn          = postgres.StringColumn("name")
-		DescriptionColumn   = postgres.StringColumn("description")
-		ActiveCountColumn   = postgres.IntegerColumn("active_count")
-		RotationDayColumn   = postgres.IntegerColumn("rotation_day")
-		LastRotatedAtColumn = postgres.TimestampzColumn("last_rotated_at")
-		CreatedAtColumn     = postgres.TimestampzColumn("created_at")
-		UpdatedAtColumn     = postgres.TimestampzColumn("updated_at")
-		allColumns          = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ActiveCountColumn, RotationDayColumn, LastRotatedAtColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns      = postgres.ColumnList{NameColumn, DescriptionColumn, ActiveCountColumn, RotationDayColumn, LastRotatedAtColumn, CreatedAtColumn, UpdatedAtColumn}
-		defaultColumns      = postgres.ColumnList{IDColumn, ActiveCountColumn, RotationDayColumn, CreatedAtColumn, UpdatedAtColumn}
+		IDColumn                = postgres.StringColumn("id")
+		NameColumn              = postgres.StringColumn("name")
+		DescriptionColumn       = postgres.StringColumn("description")
+		ActiveCountColumn       = postgres.IntegerColumn("active_count")
+		RotationDayColumn       = postgres.IntegerColumn("rotation_day")
+		LastRotatedAtColumn     = postgres.TimestampzColumn("last_rotated_at")
+		CreatedAtColumn         = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn         = postgres.TimestampzColumn("updated_at")
+		ImageColumn             = postgres.StringColumn("image")
+		BannerTypeColumn        = postgres.StringColumn("banner_type")
+		SortOrderColumn         = postgres.IntegerColumn("sort_order")
+		IsActiveColumn          = postgres.BoolColumn("is_active")
+		OpenAtColumn            = postgres.TimestampzColumn("open_at")
+		CloseAtColumn           = postgres.TimestampzColumn("close_at")
+		RotationTypeColumn      = postgres.StringColumn("rotation_type")
+		RotationIntervalColumn  = postgres.IntegerColumn("rotation_interval")
+		RotationHourColumn      = postgres.IntegerColumn("rotation_hour")
+		RotationOrderModeColumn = postgres.StringColumn("rotation_order_mode")
+		NextRotationAtColumn    = postgres.TimestampzColumn("next_rotation_at")
+		PreviewDaysColumn       = postgres.IntegerColumn("preview_days")
+		allColumns              = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ActiveCountColumn, RotationDayColumn, LastRotatedAtColumn, CreatedAtColumn, UpdatedAtColumn, ImageColumn, BannerTypeColumn, SortOrderColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, RotationTypeColumn, RotationIntervalColumn, RotationHourColumn, RotationOrderModeColumn, NextRotationAtColumn, PreviewDaysColumn}
+		mutableColumns          = postgres.ColumnList{NameColumn, DescriptionColumn, ActiveCountColumn, RotationDayColumn, LastRotatedAtColumn, CreatedAtColumn, UpdatedAtColumn, ImageColumn, BannerTypeColumn, SortOrderColumn, IsActiveColumn, OpenAtColumn, CloseAtColumn, RotationTypeColumn, RotationIntervalColumn, RotationHourColumn, RotationOrderModeColumn, NextRotationAtColumn, PreviewDaysColumn}
+		defaultColumns          = postgres.ColumnList{IDColumn, ActiveCountColumn, CreatedAtColumn, UpdatedAtColumn, BannerTypeColumn, SortOrderColumn, IsActiveColumn, RotationTypeColumn, RotationIntervalColumn, RotationHourColumn, RotationOrderModeColumn, PreviewDaysColumn}
 	)
 
 	return packPoolTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:            IDColumn,
-		Name:          NameColumn,
-		Description:   DescriptionColumn,
-		ActiveCount:   ActiveCountColumn,
-		RotationDay:   RotationDayColumn,
-		LastRotatedAt: LastRotatedAtColumn,
-		CreatedAt:     CreatedAtColumn,
-		UpdatedAt:     UpdatedAtColumn,
+		ID:                IDColumn,
+		Name:              NameColumn,
+		Description:       DescriptionColumn,
+		ActiveCount:       ActiveCountColumn,
+		RotationDay:       RotationDayColumn,
+		LastRotatedAt:     LastRotatedAtColumn,
+		CreatedAt:         CreatedAtColumn,
+		UpdatedAt:         UpdatedAtColumn,
+		Image:             ImageColumn,
+		BannerType:        BannerTypeColumn,
+		SortOrder:         SortOrderColumn,
+		IsActive:          IsActiveColumn,
+		OpenAt:            OpenAtColumn,
+		CloseAt:           CloseAtColumn,
+		RotationType:      RotationTypeColumn,
+		RotationInterval:  RotationIntervalColumn,
+		RotationHour:      RotationHourColumn,
+		RotationOrderMode: RotationOrderModeColumn,
+		NextRotationAt:    NextRotationAtColumn,
+		PreviewDays:       PreviewDaysColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

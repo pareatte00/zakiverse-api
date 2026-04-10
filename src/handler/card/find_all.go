@@ -12,6 +12,7 @@ import (
 type findAllRequest struct {
 	Search string `json:"search"`
 	Rarity string `json:"rarity" validate:"omitempty,oneof=common rare epic legendary prismatic"`
+	TagId  string `json:"tag_id" validate:"omitempty,uuid"`
 	Sort   string `json:"sort" validate:"omitempty,oneof=name rarity"`
 	Order  string `json:"order" validate:"omitempty,oneof=asc desc"`
 	Page   int64  `json:"page" validate:"required,min=1"`
@@ -27,6 +28,7 @@ func (h Handler) FindAll(c *gin.Context) {
 	payload, codeErr := h.service.Card.FindAll(c.Request.Context(), service.FindAllCardsParam{
 		Search: request.Search,
 		Rarity: request.Rarity,
+		TagId:  request.TagId,
 		Sort:   request.Sort,
 		Order:  request.Order,
 		Page:   request.Page,

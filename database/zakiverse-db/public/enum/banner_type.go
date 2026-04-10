@@ -9,12 +9,16 @@ package enum
 
 import "github.com/go-jet/jet/v2/postgres"
 
-var PackType = &struct {
+var BannerType = &struct {
 	Standard postgres.StringExpression
-	Limited  postgres.StringExpression
+	Featured postgres.StringExpression
 	Event    postgres.StringExpression
+	Beginner postgres.StringExpression
+	Seasonal postgres.StringExpression
 }{
 	Standard: postgres.NewEnumValue("standard"),
-	Limited:  postgres.NewEnumValue("limited"),
+	Featured: postgres.NewEnumValue("featured"),
 	Event:    postgres.NewEnumValue("event"),
+	Beginner: postgres.NewEnumValue("beginner"),
+	Seasonal: postgres.NewEnumValue("seasonal"),
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type removeCardsUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 type removeCardsRequest struct {
@@ -27,7 +27,7 @@ func (h Handler) RemoveCards(c *gin.Context) {
 		return
 	}
 
-	codeErr := h.service.Pack.RemoveCards(c.Request.Context(), uri.Id, request.CardIds)
+	codeErr := h.service.Pack.RemoveCards(c.Request.Context(), uri.ID, request.CardIds)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

@@ -17,7 +17,7 @@ type AccountCardService struct {
 }
 
 type AccountCardPayload struct {
-	Id         uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
 	AccountId  string    `json:"account_id"`
 	CardId     string    `json:"card_id"`
 	ObtainedAt string    `json:"obtained_at"`
@@ -44,7 +44,7 @@ func (s *AccountCardService) FindMyCards(ctx context.Context, param FindMyCardsP
 	payload := make([]AccountCardPayload, len(accountCards))
 	for i, ac := range accountCards {
 		payload[i] = AccountCardPayload{
-			Id:         ac.ID,
+			ID:         ac.ID,
 			AccountId:  ac.AccountID.String(),
 			CardId:     ac.CardID.String(),
 			ObtainedAt: ac.ObtainedAt.Format("2006-01-02T15:04:05Z07:00"),
@@ -73,7 +73,7 @@ func (s *AccountCardService) AddCard(ctx context.Context, param AddCardParam) (A
 	}
 
 	return AccountCardPayload{
-		Id:         accountCard.ID,
+		ID:         accountCard.ID,
 		AccountId:  accountCard.AccountID.String(),
 		CardId:     accountCard.CardID.String(),
 		ObtainedAt: accountCard.ObtainedAt.Format("2006-01-02T15:04:05Z07:00"),

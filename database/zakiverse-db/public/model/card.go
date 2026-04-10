@@ -22,4 +22,5 @@ type Card struct {
 	UpdatedAt time.Time
 	Rarity    CardRarity
 	Config    string
+	TagID     *uuid.UUID
 }

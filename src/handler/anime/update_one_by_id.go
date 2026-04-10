@@ -10,7 +10,7 @@ import (
 )
 
 type updateOneByIdUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 type updateOneByIdRequest struct {
@@ -30,7 +30,7 @@ func (h Handler) UpdateOneById(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.Anime.UpdateOneById(c.Request.Context(), uri.Id, service.UpdateAnimeParam{
+	payload, codeErr := h.service.Anime.UpdateOneById(c.Request.Context(), uri.ID, service.UpdateAnimeParam{
 		Title:      request.Title,
 		Synopsis:   request.Synopsis,
 		CoverImage: request.CoverImage,

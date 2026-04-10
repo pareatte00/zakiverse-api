@@ -12,7 +12,8 @@ type Repository struct {
 type CardWithAnime struct {
 	model.Card
 
-	Anime model.Anime
+	Anime   model.Anime
+	CardTag *model.CardTag
 }
 
 func New(db qrm.DB) *Repository {

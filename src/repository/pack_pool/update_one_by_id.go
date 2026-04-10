@@ -13,10 +13,22 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, updates map[s
 	var dest model.PackPool
 
 	columnMap := map[string]postgres.Column{
-		"name":         PackPool.Name,
-		"description":  PackPool.Description,
-		"active_count": PackPool.ActiveCount,
-		"rotation_day": PackPool.RotationDay,
+		"name":                PackPool.Name,
+		"description":         PackPool.Description,
+		"image":               PackPool.Image,
+		"banner_type":         PackPool.BannerType,
+		"sort_order":          PackPool.SortOrder,
+		"is_active":           PackPool.IsActive,
+		"open_at":             PackPool.OpenAt,
+		"close_at":            PackPool.CloseAt,
+		"active_count":        PackPool.ActiveCount,
+		"rotation_type":       PackPool.RotationType,
+		"rotation_day":        PackPool.RotationDay,
+		"rotation_interval":   PackPool.RotationInterval,
+		"rotation_hour":       PackPool.RotationHour,
+		"rotation_order_mode": PackPool.RotationOrderMode,
+		"next_rotation_at":    PackPool.NextRotationAt,
+		"preview_days":        PackPool.PreviewDays,
 	}
 
 	var f postgres.ColumnList

@@ -10,7 +10,7 @@ import (
 )
 
 type pullUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 type pullRequest struct {
@@ -30,7 +30,7 @@ func (h Handler) Pull(c *gin.Context) {
 
 	accountId := c.GetString(cst.MiddlewareKeyAccountId)
 
-	payload, codeErr := h.service.Pack.Pull(c.Request.Context(), accountId, uri.Id, request.Mode)
+	payload, codeErr := h.service.Pack.Pull(c.Request.Context(), accountId, uri.ID, request.Mode)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

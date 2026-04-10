@@ -9,7 +9,7 @@ import (
 )
 
 type findOneByIdUri struct {
-	Id string `uri:"id" validate:"required,uuid"`
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
 func (h Handler) FindOneById(c *gin.Context) {
@@ -18,7 +18,7 @@ func (h Handler) FindOneById(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.Card.FindOneById(c.Request.Context(), uri.Id)
+	payload, codeErr := h.service.Card.FindOneById(c.Request.Context(), uri.ID)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return

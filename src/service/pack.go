@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
 
 	"github.com/go-jet/jet/v2/qrm"
 	"github.com/google/uuid"
@@ -24,22 +23,19 @@ type PackConfig struct {
 }
 
 type PackPayload struct {
-	Id           uuid.UUID         `json:"id"`
-	Code         string            `json:"code"`
-	Name         string            `json:"name"`
-	Description  *string           `json:"description"`
-	Image        string            `json:"image"`
-	NameImage    *string           `json:"name_image"`
-	Type         string            `json:"type"`
-	CardsPerPull int32             `json:"cards_per_pull"`
-	SortOrder    int32             `json:"sort_order"`
-	IsActive     bool              `json:"is_active"`
-	OpenAt       *time.Time        `json:"open_at"`
-	CloseAt      *time.Time        `json:"close_at"`
-	Config       PackConfig        `json:"config"`
-	PoolId       *uuid.UUID        `json:"pool_id"`
-	TotalCards   int64             `json:"total_cards"`
-	Cards        []PackCardPayload `json:"cards,omitempty"`
+	ID            uuid.UUID         `json:"id"`
+	Code          string            `json:"code"`
+	Name          string            `json:"name"`
+	Description   *string           `json:"description"`
+	Image         string            `json:"image"`
+	NameImage     *string           `json:"name_image"`
+	CardsPerPull  int32             `json:"cards_per_pull"`
+	SortOrder     int32             `json:"sort_order"`
+	Config        PackConfig        `json:"config"`
+	PoolId        uuid.UUID         `json:"pool_id"`
+	RotationOrder *int32            `json:"rotation_order"`
+	TotalCards    int64             `json:"total_cards"`
+	Cards         []PackCardPayload `json:"cards,omitempty"`
 }
 
 type PackCardAnimePayload struct {
@@ -48,7 +44,7 @@ type PackCardAnimePayload struct {
 }
 
 type PackCardPayload struct {
-	Id           uuid.UUID            `json:"id"`
+	ID           uuid.UUID            `json:"id"`
 	CardId       uuid.UUID            `json:"card_id"`
 	Weight       float64              `json:"weight"`
 	IsFeatured   bool                 `json:"is_featured"`
@@ -75,20 +71,17 @@ func unmarshalPackConfig(raw string) PackConfig {
 
 func toPackPayload(pack model.Pack) PackPayload {
 	return PackPayload{
-		Id:           pack.ID,
-		Code:         pack.Code,
-		Name:         pack.Name,
-		Description:  pack.Description,
-		Image:        pack.Image,
-		NameImage:    pack.NameImage,
-		Type:         string(pack.Type),
-		CardsPerPull: pack.CardsPerPull,
-		SortOrder:    pack.SortOrder,
-		IsActive:     pack.IsActive,
-		OpenAt:       pack.OpenAt,
-		CloseAt:      pack.CloseAt,
-		Config:       unmarshalPackConfig(pack.Config),
-		PoolId:       pack.PoolID,
+		ID:            pack.ID,
+		Code:          pack.Code,
+		Name:          pack.Name,
+		Description:   pack.Description,
+		Image:         pack.Image,
+		NameImage:     pack.NameImage,
+		CardsPerPull:  pack.CardsPerPull,
+		SortOrder:     pack.SortOrder,
+		Config:        unmarshalPackConfig(pack.Config),
+		PoolId:        pack.PoolID,
+		RotationOrder: pack.RotationOrder,
 	}
 }
 
@@ -96,7 +89,7 @@ func toPackCardPayloads(cards []packRepo.PackCardWithCard) []PackCardPayload {
 	payload := make([]PackCardPayload, len(cards))
 	for i, c := range cards {
 		payload[i] = PackCardPayload{
-			Id:           c.ID,
+			ID:           c.ID,
 			CardId:       c.CardID,
 			Weight:       c.Weight,
 			IsFeatured:   c.IsFeatured,
@@ -114,18 +107,16 @@ func toPackCardPayloads(cards []packRepo.PackCardWithCard) []PackCardPayload {
 }
 
 type CreatePackParam struct {
-	Code         string
-	Name         string
-	Description  *string
-	Image        string
-	NameImage    *string
-	Type         string
-	CardsPerPull int32
-	SortOrder    int32
-	IsActive     bool
-	OpenAt       *time.Time
-	CloseAt      *time.Time
-	Config       PackConfig
+	Code          string
+	Name          string
+	Description   *string
+	Image         string
+	NameImage     *string
+	CardsPerPull  int32
+	SortOrder     int32
+	Config        PackConfig
+	PoolId        string
+	RotationOrder *int32
 }
 
 func (s *PackService) CreateOne(ctx context.Context, param CreatePackParam) (PackPayload, code.I) {
@@ -135,18 +126,16 @@ func (s *PackService) CreateOne(ctx context.Context, param CreatePackParam) (Pac
 	}
 
 	pack, err := s.service.repository.Pack.CreateOne(ctx, packRepo.CreateOneParam{
-		Code:         param.Code,
-		Name:         param.Name,
-		Description:  param.Description,
-		Image:        param.Image,
-		NameImage:    param.NameImage,
-		Type:         param.Type,
-		CardsPerPull: param.CardsPerPull,
-		SortOrder:    param.SortOrder,
-		IsActive:     param.IsActive,
-		OpenAt:       param.OpenAt,
-		CloseAt:      param.CloseAt,
-		Config:       configJson,
+		Code:          param.Code,
+		Name:          param.Name,
+		Description:   param.Description,
+		Image:         param.Image,
+		NameImage:     param.NameImage,
+		CardsPerPull:  param.CardsPerPull,
+		SortOrder:     param.SortOrder,
+		Config:        configJson,
+		PoolId:        param.PoolId,
+		RotationOrder: param.RotationOrder,
 	})
 	if err != nil {
 		return PackPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
@@ -172,20 +161,16 @@ func (s *PackService) FindOneById(ctx context.Context, id string) (PackPayload, 
 }
 
 type FindAllPacksParam struct {
-	ActiveOnly bool
-	Type       string
-	Page       int64
-	Limit      int64
+	Page  int64
+	Limit int64
 }
 
 func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]PackPayload, code.I) {
 	offset := (param.Page - 1) * param.Limit
 
 	packs, err := s.service.repository.Pack.FindAll(ctx, packRepo.FindAllParam{
-		ActiveOnly: param.ActiveOnly,
-		Type:       param.Type,
-		Limit:      param.Limit,
-		Offset:     offset,
+		Limit:  param.Limit,
+		Offset: offset,
 	})
 	if err != nil {
 		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
@@ -260,7 +245,7 @@ func (s *PackService) AddCards(ctx context.Context, packId string, params []AddP
 	payload := make([]PackCardPayload, len(cards))
 	for i, c := range cards {
 		payload[i] = PackCardPayload{
-			Id:           c.ID,
+			ID:           c.ID,
 			CardId:       c.CardID,
 			Weight:       c.Weight,
 			IsFeatured:   c.IsFeatured,

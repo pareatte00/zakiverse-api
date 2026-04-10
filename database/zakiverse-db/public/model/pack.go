@@ -18,16 +18,13 @@ type Pack struct {
 	Description         *string
 	Image               string
 	CardsPerPull        int32
-	IsActive            bool
-	OpenAt              *time.Time
-	CloseAt             *time.Time
 	Config              string
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	Code                string
 	NameImage           *string
-	Type                PackType
 	SortOrder           int32
-	PoolID              *uuid.UUID
+	PoolID              uuid.UUID
 	LastPoolActivatedAt *time.Time
+	RotationOrder       *int32
 }

@@ -24,7 +24,7 @@ type CreateAnimeParam struct {
 }
 
 type AnimePayload struct {
-	Id         uuid.UUID `json:"id"`
+	ID         uuid.UUID `json:"id"`
 	MalId      int32     `json:"mal_id"`
 	Title      string    `json:"title"`
 	Synopsis   *string   `json:"synopsis"`
@@ -47,7 +47,7 @@ func (s *AnimeService) CreateOne(ctx context.Context, param CreateAnimeParam) (A
 	}
 
 	return AnimePayload{
-		Id:         anime.ID,
+		ID:         anime.ID,
 		MalId:      anime.MalID,
 		Title:      anime.Title,
 		Synopsis:   anime.Synopsis,
@@ -65,7 +65,7 @@ func (s *AnimeService) FindOneById(ctx context.Context, id string) (AnimePayload
 	}
 
 	return AnimePayload{
-		Id:         anime.ID,
+		ID:         anime.ID,
 		MalId:      anime.MalID,
 		Title:      anime.Title,
 		Synopsis:   anime.Synopsis,
@@ -92,7 +92,7 @@ func (s *AnimeService) FindAll(ctx context.Context, param FindAllAnimeParam) ([]
 	payload := make([]AnimePayload, len(animes))
 	for i, a := range animes {
 		payload[i] = AnimePayload{
-			Id:         a.ID,
+			ID:         a.ID,
 			MalId:      a.MalID,
 			Title:      a.Title,
 			Synopsis:   a.Synopsis,
@@ -125,7 +125,7 @@ func (s *AnimeService) UpdateOneById(ctx context.Context, id string, param Updat
 	}
 
 	return AnimePayload{
-		Id:         anime.ID,
+		ID:         anime.ID,
 		MalId:      anime.MalID,
 		Title:      anime.Title,
 		Synopsis:   anime.Synopsis,

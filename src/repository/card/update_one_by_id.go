@@ -17,6 +17,7 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, updates map[s
 		"name":   Card.Name,
 		"image":  Card.Image,
 		"config": Card.Config,
+		"tag_id": Card.TagID,
 	}
 
 	var f postgres.ColumnList
