@@ -33,6 +33,10 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string,
 	}
 
 	// 1a. Pool-based validation
+	if packData.Pack.PoolID == nil {
+		return PullResultPayload{}, code.BannerNotActive.Err()
+	}
+
 	pool, err := s.service.repository.PackPool.FindOneById(ctx, packData.Pack.PoolID.String())
 	if err != nil {
 		return PullResultPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

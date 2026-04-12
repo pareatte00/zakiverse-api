@@ -40,8 +40,9 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]CardWit
 	}
 
 	sortColumn := map[string]postgres.Column{
-		"name":   Card.Name,
-		"rarity": Card.Rarity,
+		"name":     Card.Name,
+		"rarity":   Card.Rarity,
+		"favorite": Card.Favorite,
 	}
 
 	col, ok := sortColumn[param.Sort]
@@ -55,7 +56,7 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]CardWit
 	} else {
 		orderClauses = append(orderClauses, col.ASC())
 	}
-	if param.Sort == "rarity" {
+	if param.Sort == "rarity" || param.Sort == "favorite" {
 		orderClauses = append(orderClauses, Card.Name.ASC())
 	}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	tagRepo "github.com/zakiverse/zakiverse-api/src/repository/card_tag"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -78,15 +79,20 @@ func (s *CardTagService) FindOneById(ctx context.Context, id string) (CardTagPay
 	}, code.OK()
 }
 
-func (s *CardTagService) FindAll(ctx context.Context, param FindAllCardTagsParam) ([]CardTagPayload, code.I) {
+func (s *CardTagService) FindAll(ctx context.Context, param FindAllCardTagsParam) ([]CardTagPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.CardTag.Count(ctx)
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	tags, err := s.service.repository.CardTag.FindAll(ctx, tagRepo.FindAllParam{
 		Limit:  param.Limit,
 		Offset: offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]CardTagPayload, len(tags))
@@ -99,7 +105,7 @@ func (s *CardTagService) FindAll(ctx context.Context, param FindAllCardTagsParam
 		}
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 func (s *CardTagService) UpdateOneById(ctx context.Context, id string, updates map[string]any) (CardTagPayload, code.I) {

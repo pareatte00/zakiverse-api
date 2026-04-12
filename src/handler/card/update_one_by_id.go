@@ -15,11 +15,12 @@ type updateOneByIdUri struct {
 }
 
 type updateOneByIdRequest struct {
-	Rarity *string             `json:"rarity" validate:"omitempty,oneof=common rare epic legendary prismatic"`
-	Name   *string             `json:"name" validate:"omitempty"`
-	Image  *string             `json:"image" validate:"omitempty"`
-	Config *service.CardConfig `json:"config"`
-	TagId  *string             `json:"tag_id" validate:"omitempty,uuid"`
+	Rarity   *string             `json:"rarity" validate:"omitempty,oneof=common rare epic legendary prismatic"`
+	Name     *string             `json:"name" validate:"omitempty"`
+	Image    *string             `json:"image" validate:"omitempty"`
+	Config   *service.CardConfig `json:"config"`
+	TagId    *string             `json:"tag_id" validate:"omitempty,uuid"`
+	Favorite *int32              `json:"favorite"`
 }
 
 func (h Handler) UpdateOneById(c *gin.Context) {
@@ -38,7 +39,7 @@ func (h Handler) UpdateOneById(c *gin.Context) {
 		return
 	}
 
-	updates := patcher.Pick(updateMap, "rarity", "name", "image", "config", "tag_id")
+	updates := patcher.Pick(updateMap, "rarity", "name", "image", "config", "tag_id", "favorite")
 
 	payload, codeErr := h.service.Card.UpdateOneById(c.Request.Context(), uri.ID, updates)
 	if !codeErr.OK() {

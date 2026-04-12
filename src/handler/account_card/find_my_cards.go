@@ -23,7 +23,7 @@ func (h Handler) FindMyCards(c *gin.Context) {
 
 	accountId := c.GetString(cst.MiddlewareKeyAccountId)
 
-	payload, codeErr := h.service.AccountCard.FindMyCards(c.Request.Context(), service.FindMyCardsParam{
+	payload, meta, codeErr := h.service.AccountCard.FindMyCards(c.Request.Context(), service.FindMyCardsParam{
 		AccountId: accountId,
 		Page:      query.Page,
 		Limit:     query.Limit,
@@ -33,5 +33,5 @@ func (h Handler) FindMyCards(c *gin.Context) {
 		return
 	}
 
-	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
 }

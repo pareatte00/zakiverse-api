@@ -25,6 +25,11 @@ type CreateOneParam struct {
 func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model.Pack, error) {
 	var dest model.Pack
 
+	var poolIdVal any
+	if param.PoolId != "" {
+		poolIdVal = postgres.CAST(postgres.String(param.PoolId)).AS_UUID()
+	}
+
 	stmt := Pack.INSERT(
 		Pack.Code,
 		Pack.Name,
@@ -45,7 +50,7 @@ func (r *Repository) CreateOne(ctx context.Context, param CreateOneParam) (model
 		param.CardsPerPull,
 		param.SortOrder,
 		param.Config,
-		postgres.CAST(postgres.String(param.PoolId)).AS_UUID(),
+		poolIdVal,
 		param.RotationOrder,
 	).RETURNING(Pack.AllColumns)
 

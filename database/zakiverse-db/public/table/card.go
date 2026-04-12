@@ -27,6 +27,7 @@ type cardTable struct {
 	Rarity    postgres.ColumnString
 	Config    postgres.ColumnString
 	TagID     postgres.ColumnString
+	Favorite  postgres.ColumnInteger
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -78,9 +79,10 @@ func newCardTableImpl(schemaName, tableName, alias string) cardTable {
 		RarityColumn    = postgres.StringColumn("rarity")
 		ConfigColumn    = postgres.StringColumn("config")
 		TagIDColumn     = postgres.StringColumn("tag_id")
-		allColumns      = postgres.ColumnList{IDColumn, MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn, TagIDColumn}
-		mutableColumns  = postgres.ColumnList{MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn, TagIDColumn}
-		defaultColumns  = postgres.ColumnList{IDColumn, CreatedAtColumn, UpdatedAtColumn, ConfigColumn}
+		FavoriteColumn  = postgres.IntegerColumn("favorite")
+		allColumns      = postgres.ColumnList{IDColumn, MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn, TagIDColumn, FavoriteColumn}
+		mutableColumns  = postgres.ColumnList{MalIDColumn, AnimeIDColumn, NameColumn, ImageColumn, CreatedAtColumn, UpdatedAtColumn, RarityColumn, ConfigColumn, TagIDColumn, FavoriteColumn}
+		defaultColumns  = postgres.ColumnList{IDColumn, CreatedAtColumn, UpdatedAtColumn, ConfigColumn, FavoriteColumn}
 	)
 
 	return cardTable{
@@ -97,6 +99,7 @@ func newCardTableImpl(schemaName, tableName, alias string) cardTable {
 		Rarity:    RarityColumn,
 		Config:    ConfigColumn,
 		TagID:     TagIDColumn,
+		Favorite:  FavoriteColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

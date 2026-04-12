@@ -21,6 +21,7 @@ func (r *Repository) UpdateOneById(ctx context.Context, id string, updates map[s
 		"cards_per_pull": Pack.CardsPerPull,
 		"sort_order":     Pack.SortOrder,
 		"config":         Pack.Config,
+		"pool_id":        Pack.PoolID,
 		"rotation_order": Pack.RotationOrder,
 	}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	animeRepo "github.com/zakiverse/zakiverse-api/src/repository/anime"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -78,15 +79,20 @@ type FindAllAnimeParam struct {
 	Limit int64
 }
 
-func (s *AnimeService) FindAll(ctx context.Context, param FindAllAnimeParam) ([]AnimePayload, code.I) {
+func (s *AnimeService) FindAll(ctx context.Context, param FindAllAnimeParam) ([]AnimePayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.Anime.Count(ctx)
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	animes, err := s.service.repository.Anime.FindAll(ctx, animeRepo.FindAllParam{
 		Limit:  param.Limit,
 		Offset: offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]AnimePayload, len(animes))
@@ -100,7 +106,7 @@ func (s *AnimeService) FindAll(ctx context.Context, param FindAllAnimeParam) ([]
 		}
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 type UpdateAnimeParam struct {

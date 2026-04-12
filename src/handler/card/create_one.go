@@ -15,7 +15,8 @@ type createOneRequest struct {
 	Name            string             `json:"name" validate:"required"`
 	Image           string             `json:"image" validate:"required"`
 	Config          service.CardConfig `json:"config"`
-	TagId           *string            `json:"tag_id" validate:"omitempty,uuid"`
+	TagId           string             `json:"tag_id" validate:"required,uuid"`
+	Favorite        int32              `json:"favorite"`
 	AnimeMalId      int32              `json:"anime_mal_id" validate:"required"`
 	AnimeTitle      string             `json:"anime_title" validate:"required"`
 	AnimeSynopsis   *string            `json:"anime_synopsis"`
@@ -35,6 +36,7 @@ func (h Handler) CreateOne(c *gin.Context) {
 		Image:           request.Image,
 		Config:          request.Config,
 		TagId:           request.TagId,
+		Favorite:        request.Favorite,
 		AnimeMalId:      request.AnimeMalId,
 		AnimeTitle:      request.AnimeTitle,
 		AnimeSynopsis:   request.AnimeSynopsis,

@@ -13,7 +13,7 @@ type findAllRequest struct {
 	Search string `json:"search"`
 	Rarity string `json:"rarity" validate:"omitempty,oneof=common rare epic legendary prismatic"`
 	TagId  string `json:"tag_id" validate:"omitempty,uuid"`
-	Sort   string `json:"sort" validate:"omitempty,oneof=name rarity"`
+	Sort   string `json:"sort" validate:"omitempty,oneof=name rarity favorite"`
 	Order  string `json:"order" validate:"omitempty,oneof=asc desc"`
 	Page   int64  `json:"page" validate:"required,min=1"`
 	Limit  int64  `json:"limit" validate:"required,min=1,max=100"`
@@ -25,7 +25,7 @@ func (h Handler) FindAll(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.Card.FindAll(c.Request.Context(), service.FindAllCardsParam{
+	payload, meta, codeErr := h.service.Card.FindAll(c.Request.Context(), service.FindAllCardsParam{
 		Search: request.Search,
 		Rarity: request.Rarity,
 		TagId:  request.TagId,
@@ -39,5 +39,5 @@ func (h Handler) FindAll(c *gin.Context) {
 		return
 	}
 
-	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
 }

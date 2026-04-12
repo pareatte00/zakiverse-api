@@ -8,7 +8,7 @@ CREATE TABLE pack (
     cards_per_pull         INT           NOT NULL DEFAULT 5,
     sort_order             INT           NOT NULL DEFAULT 0,
     config                 JSONB         NOT NULL DEFAULT '{}',
-    pool_id                UUID          NOT NULL REFERENCES pack_pool(id) ON DELETE RESTRICT,
+    pool_id                UUID          REFERENCES pack_pool(id) ON DELETE SET NULL,
     rotation_order         INT,
     last_pool_activated_at TIMESTAMPTZ,
     created_at             TIMESTAMPTZ   NOT NULL DEFAULT NOW(),

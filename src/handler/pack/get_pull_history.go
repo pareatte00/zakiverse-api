@@ -32,7 +32,7 @@ func (h Handler) GetPullHistory(c *gin.Context) {
 
 	accountId := c.GetString(cst.MiddlewareKeyAccountId)
 
-	payload, codeErr := h.service.Pack.GetPullHistory(c.Request.Context(), service.FindPullHistoryParam{
+	payload, meta, codeErr := h.service.Pack.GetPullHistory(c.Request.Context(), service.FindPullHistoryParam{
 		AccountId: accountId,
 		PackId:    uri.ID,
 		Page:      query.Page,
@@ -43,5 +43,5 @@ func (h Handler) GetPullHistory(c *gin.Context) {
 		return
 	}
 
-	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
 	animeRepo "github.com/zakiverse/zakiverse-api/src/repository/anime"
 	cardRepo "github.com/zakiverse/zakiverse-api/src/repository/card"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -29,7 +30,8 @@ type CreateCardParam struct {
 	Name            string
 	Image           string
 	Config          CardConfig
-	TagId           *string
+	TagId           string
+	Favorite        int32
 	AnimeMalId      int32
 	AnimeTitle      string
 	AnimeSynopsis   *string
@@ -43,9 +45,10 @@ type CardPayload struct {
 	Name    string       `json:"name"`
 	Image   string       `json:"image"`
 	Config  CardConfig   `json:"config"`
-	TagId   *uuid.UUID   `json:"tag_id"`
-	TagName *string      `json:"tag_name"`
-	Anime   AnimePayload `json:"anime"`
+	TagId    uuid.UUID    `json:"tag_id"`
+	TagName  string       `json:"tag_name"`
+	Favorite int32        `json:"favorite"`
+	Anime    AnimePayload `json:"anime"`
 }
 
 func marshalCardConfig(cfg CardConfig) (string, error) {
@@ -69,8 +72,9 @@ func toCardPayload(card model.Card, anime model.Anime, cardTag *model.CardTag) C
 		Rarity: string(card.Rarity),
 		Name:   card.Name,
 		Image:  card.Image,
-		Config: unmarshalCardConfig(card.Config),
-		TagId:  card.TagID,
+		Config:   unmarshalCardConfig(card.Config),
+		TagId:    card.TagID,
+		Favorite: card.Favorite,
 		Anime: AnimePayload{
 			ID:         anime.ID,
 			MalId:      anime.MalID,
@@ -80,7 +84,7 @@ func toCardPayload(card model.Card, anime model.Anime, cardTag *model.CardTag) C
 		},
 	}
 	if cardTag != nil {
-		p.TagName = &cardTag.Name
+		p.TagName = cardTag.Name
 	}
 	return p
 }
@@ -114,8 +118,9 @@ func (s *CardService) CreateOne(ctx context.Context, param CreateCardParam) (Car
 		Rarity:  param.Rarity,
 		Name:    param.Name,
 		Image:   param.Image,
-		Config:  configJson,
-		TagId:   param.TagId,
+		Config:   configJson,
+		TagId:    param.TagId,
+		Favorite: param.Favorite,
 	})
 	if err != nil {
 		var pgErr *pq.Error
@@ -150,8 +155,17 @@ type FindAllCardsParam struct {
 	Limit  int64
 }
 
-func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]CardPayload, code.I) {
+func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]CardPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.Card.Count(ctx, cardRepo.CountParam{
+		Search: param.Search,
+		Rarity: param.Rarity,
+		TagId:  param.TagId,
+	})
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	results, err := s.service.repository.Card.FindAll(ctx, cardRepo.FindAllParam{
 		Search: param.Search,
@@ -163,7 +177,7 @@ func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]C
 		Offset: offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]CardPayload, len(results))
@@ -171,7 +185,7 @@ func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]C
 		payload[i] = toCardPayload(r.Card, r.Anime, r.CardTag)
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 type FindAllCardsByAnimeIdParam struct {
@@ -180,8 +194,13 @@ type FindAllCardsByAnimeIdParam struct {
 	Limit   int64
 }
 
-func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsByAnimeIdParam) ([]CardPayload, code.I) {
+func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsByAnimeIdParam) ([]CardPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.Card.CountByAnimeId(ctx, param.AnimeId)
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	results, err := s.service.repository.Card.FindAllByAnimeId(ctx, cardRepo.FindAllByAnimeIdParam{
 		AnimeId: param.AnimeId,
@@ -189,7 +208,7 @@ func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsBy
 		Offset:  offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]CardPayload, len(results))
@@ -197,7 +216,7 @@ func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsBy
 		payload[i] = toCardPayload(r.Card, r.Anime, r.CardTag)
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 func (s *CardService) UpdateOneById(ctx context.Context, id string, updates map[string]any) (CardPayload, code.I) {
@@ -222,15 +241,12 @@ func (s *CardService) UpdateOneById(ctx context.Context, id string, updates map[
 		return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
-	var cardTag *model.CardTag
-	if card.TagID != nil {
-		tag, err := s.service.repository.CardTag.FindOneById(ctx, card.TagID.String())
-		if err == nil {
-			cardTag = &tag
-		}
+	tag, err := s.service.repository.CardTag.FindOneById(ctx, card.TagID.String())
+	if err != nil {
+		return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
-	return toCardPayload(card, anime, cardTag), code.OK()
+	return toCardPayload(card, anime, &tag), code.OK()
 }
 
 func (s *CardService) DeleteOneById(ctx context.Context, id string) code.I {

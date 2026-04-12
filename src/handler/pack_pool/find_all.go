@@ -22,7 +22,7 @@ func (h Handler) FindAll(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.PackPool.FindAll(c.Request.Context(), service.FindAllPackPoolsParam{
+	payload, meta, codeErr := h.service.PackPool.FindAll(c.Request.Context(), service.FindAllPackPoolsParam{
 		BannerType: query.BannerType,
 		ActiveOnly: query.ActiveOnly,
 		Page:       query.Page,
@@ -33,5 +33,5 @@ func (h Handler) FindAll(c *gin.Context) {
 		return
 	}
 
-	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
 }

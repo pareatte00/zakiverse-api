@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	historyRepo "github.com/zakiverse/zakiverse-api/src/repository/account_pull_history"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -28,8 +29,13 @@ type FindPullHistoryParam struct {
 	Limit     int64
 }
 
-func (s *PackService) GetPullHistory(ctx context.Context, param FindPullHistoryParam) ([]PullHistoryPayload, code.I) {
+func (s *PackService) GetPullHistory(ctx context.Context, param FindPullHistoryParam) ([]PullHistoryPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.AccountPullHistory.CountByAccountAndPack(ctx, param.AccountId, param.PackId)
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	records, err := s.service.repository.AccountPullHistory.FindByAccountAndPack(ctx, historyRepo.FindByAccountAndPackParam{
 		AccountId: param.AccountId,
@@ -38,7 +44,7 @@ func (s *PackService) GetPullHistory(ctx context.Context, param FindPullHistoryP
 		Offset:    offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]PullHistoryPayload, len(records))
@@ -55,5 +61,5 @@ func (s *PackService) GetPullHistory(ctx context.Context, param FindPullHistoryP
 		}
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }

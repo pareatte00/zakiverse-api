@@ -10,6 +10,7 @@ import (
 	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
 	poolRepo "github.com/zakiverse/zakiverse-api/src/repository/pack_pool"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -229,8 +230,16 @@ func (s *PackPoolService) FindOneByIdWithPacks(ctx context.Context, id string) (
 	return payload, code.OK()
 }
 
-func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsParam) ([]PackPoolPayload, code.I) {
+func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsParam) ([]PackPoolPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.PackPool.Count(ctx, poolRepo.CountParam{
+		BannerType: param.BannerType,
+		ActiveOnly: param.ActiveOnly,
+	})
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	pools, err := s.service.repository.PackPool.FindAll(ctx, poolRepo.FindAllParam{
 		BannerType: param.BannerType,
@@ -239,7 +248,7 @@ func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsPar
 		Offset:     offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]PackPoolPayload, len(pools))
@@ -247,7 +256,7 @@ func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsPar
 		payload[i] = toPackPoolPayload(p)
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 func (s *PackPoolService) FindActiveBanners(ctx context.Context) ([]PackPoolPayload, code.I) {
@@ -361,6 +370,73 @@ func (s *PackPoolService) UpdateOneById(ctx context.Context, id string, updates 
 func (s *PackPoolService) DeleteOneById(ctx context.Context, id string) code.I {
 	err := s.service.repository.PackPool.DeleteOneById(ctx, id)
 	if err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	return code.OK()
+}
+
+// ReorderPacks reorders packs within a pool. ids must contain ALL pack IDs belonging to the pool.
+func (s *PackPoolService) ReorderPacks(ctx context.Context, poolId string, ids []string) code.I {
+	// Validate pool exists
+	_, err := s.service.repository.PackPool.FindOneById(ctx, poolId)
+	if err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return code.ModelNotFound.Err()
+		}
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	// Get all pack IDs in this pool
+	existingIds, err := s.service.repository.Pack.FindIdsByPoolId(ctx, poolId)
+	if err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	// Validate: must match exactly
+	if len(ids) != len(existingIds) {
+		return code.HttpBadRequest.Err()
+	}
+
+	existingSet := make(map[string]bool, len(existingIds))
+	for _, id := range existingIds {
+		existingSet[id.String()] = true
+	}
+	for _, id := range ids {
+		if !existingSet[id] {
+			return code.HttpBadRequest.Err()
+		}
+	}
+
+	if err := s.service.repository.Pack.Reorder(ctx, ids); err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	return code.OK()
+}
+
+// Reorder reorders pack pools within a banner type. ids must contain ALL pool IDs of that banner type.
+func (s *PackPoolService) Reorder(ctx context.Context, bannerType string, ids []string) code.I {
+	existingIds, err := s.service.repository.PackPool.FindIdsByBannerType(ctx, bannerType)
+	if err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	if len(ids) != len(existingIds) {
+		return code.HttpBadRequest.Err()
+	}
+
+	existingSet := make(map[string]bool, len(existingIds))
+	for _, id := range existingIds {
+		existingSet[id.String()] = true
+	}
+	for _, id := range ids {
+		if !existingSet[id] {
+			return code.HttpBadRequest.Err()
+		}
+	}
+
+	if err := s.service.repository.PackPool.Reorder(ctx, ids); err != nil {
 		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 

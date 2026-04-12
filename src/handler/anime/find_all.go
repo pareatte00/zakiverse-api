@@ -20,7 +20,7 @@ func (h Handler) FindAll(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.Anime.FindAll(c.Request.Context(), service.FindAllAnimeParam{
+	payload, meta, codeErr := h.service.Anime.FindAll(c.Request.Context(), service.FindAllAnimeParam{
 		Page:  query.Page,
 		Limit: query.Limit,
 	})
@@ -29,5 +29,5 @@ func (h Handler) FindAll(c *gin.Context) {
 		return
 	}
 
-	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
 }

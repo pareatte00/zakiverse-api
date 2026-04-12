@@ -10,6 +10,7 @@ import (
 	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
 	packRepo "github.com/zakiverse/zakiverse-api/src/repository/pack"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -32,7 +33,7 @@ type PackPayload struct {
 	CardsPerPull  int32             `json:"cards_per_pull"`
 	SortOrder     int32             `json:"sort_order"`
 	Config        PackConfig        `json:"config"`
-	PoolId        uuid.UUID         `json:"pool_id"`
+	PoolId        *uuid.UUID        `json:"pool_id"`
 	RotationOrder *int32            `json:"rotation_order"`
 	TotalCards    int64             `json:"total_cards"`
 	Cards         []PackCardPayload `json:"cards,omitempty"`
@@ -165,15 +166,20 @@ type FindAllPacksParam struct {
 	Limit int64
 }
 
-func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]PackPayload, code.I) {
+func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]PackPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.Pack.Count(ctx)
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	packs, err := s.service.repository.Pack.FindAll(ctx, packRepo.FindAllParam{
 		Limit:  param.Limit,
 		Offset: offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]PackPayload, len(packs))
@@ -182,7 +188,7 @@ func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]P
 		payload[i].TotalCards = p.TotalCards
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 func (s *PackService) UpdateOneById(ctx context.Context, id string, updates map[string]any) (PackPayload, code.I) {

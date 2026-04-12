@@ -29,7 +29,7 @@ func (h Handler) FindAllByAnimeId(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.Card.FindAllByAnimeId(c.Request.Context(), service.FindAllCardsByAnimeIdParam{
+	payload, meta, codeErr := h.service.Card.FindAllByAnimeId(c.Request.Context(), service.FindAllCardsByAnimeIdParam{
 		AnimeId: uri.AnimeId,
 		Page:    query.Page,
 		Limit:   query.Limit,
@@ -39,5 +39,5 @@ func (h Handler) FindAllByAnimeId(c *gin.Context) {
 		return
 	}
 
-	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload))
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
 }

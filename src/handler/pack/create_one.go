@@ -18,7 +18,7 @@ type createOneRequest struct {
 	CardsPerPull  int32              `json:"cards_per_pull" validate:"required,min=1,max=20"`
 	SortOrder     int32              `json:"sort_order"`
 	Config        service.PackConfig `json:"config" validate:"required"`
-	PoolId        string             `json:"pool_id" validate:"required,uuid"`
+	PoolId        string             `json:"pool_id" validate:"omitempty,uuid"`
 	RotationOrder *int32             `json:"rotation_order"`
 }
 

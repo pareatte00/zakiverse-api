@@ -9,6 +9,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	accountCardRepo "github.com/zakiverse/zakiverse-api/src/repository/account_card"
+	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
@@ -29,8 +30,13 @@ type FindMyCardsParam struct {
 	Limit     int64
 }
 
-func (s *AccountCardService) FindMyCards(ctx context.Context, param FindMyCardsParam) ([]AccountCardPayload, code.I) {
+func (s *AccountCardService) FindMyCards(ctx context.Context, param FindMyCardsParam) ([]AccountCardPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
+
+	total, err := s.service.repository.AccountCard.CountByAccountId(ctx, param.AccountId)
+	if err != nil {
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
 
 	accountCards, err := s.service.repository.AccountCard.FindAllByAccountId(ctx, accountCardRepo.FindAllByAccountIdParam{
 		AccountId: param.AccountId,
@@ -38,7 +44,7 @@ func (s *AccountCardService) FindMyCards(ctx context.Context, param FindMyCardsP
 		Offset:    offset,
 	})
 	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	payload := make([]AccountCardPayload, len(accountCards))
@@ -51,7 +57,7 @@ func (s *AccountCardService) FindMyCards(ctx context.Context, param FindMyCardsP
 		}
 	}
 
-	return payload, code.OK()
+	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
 }
 
 type AddCardParam struct {

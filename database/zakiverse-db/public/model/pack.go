@@ -24,7 +24,7 @@ type Pack struct {
 	Code                string
 	NameImage           *string
 	SortOrder           int32
-	PoolID              uuid.UUID
+	PoolID              *uuid.UUID
 	LastPoolActivatedAt *time.Time
 	RotationOrder       *int32
 }
