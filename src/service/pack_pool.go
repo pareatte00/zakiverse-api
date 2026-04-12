@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
+	packRepo "github.com/zakiverse/zakiverse-api/src/repository/pack"
 	poolRepo "github.com/zakiverse/zakiverse-api/src/repository/pack_pool"
 	"github.com/zakiverse/zakiverse-api/util/pagination"
 	"github.com/zakiverse/zakiverse-api/util/trace"
@@ -44,14 +45,18 @@ type PackPoolPayload struct {
 }
 
 type PackPoolPackItem struct {
-	ID           uuid.UUID `json:"id"`
-	Code         string    `json:"code"`
-	Name         string    `json:"name"`
-	Description  *string   `json:"description"`
-	Image        string    `json:"image"`
-	NameImage    *string   `json:"name_image"`
-	CardsPerPull int32     `json:"cards_per_pull"`
-	SortOrder    int32     `json:"sort_order"`
+	ID            uuid.UUID  `json:"id"`
+	Code          string     `json:"code"`
+	Name          string     `json:"name"`
+	Description   *string    `json:"description"`
+	Image         string     `json:"image"`
+	NameImage     *string    `json:"name_image"`
+	CardsPerPull  int32      `json:"cards_per_pull"`
+	SortOrder     int32      `json:"sort_order"`
+	Config        PackConfig `json:"config"`
+	PoolId        *uuid.UUID `json:"pool_id"`
+	RotationOrder *int32     `json:"rotation_order"`
+	TotalCards    int64      `json:"total_cards"`
 }
 
 func toPackPoolPayload(pool model.PackPool) PackPoolPayload {
@@ -79,18 +84,22 @@ func toPackPoolPayload(pool model.PackPool) PackPoolPayload {
 	}
 }
 
-func toPackPoolPackItems(packs []model.Pack) []PackPoolPackItem {
+func toPackPoolPackItems(packs []packRepo.PackWithCardCount) []PackPoolPackItem {
 	items := make([]PackPoolPackItem, len(packs))
 	for i, p := range packs {
 		items[i] = PackPoolPackItem{
-			ID:           p.ID,
-			Code:         p.Code,
-			Name:         p.Name,
-			Description:  p.Description,
-			Image:        p.Image,
-			NameImage:    p.NameImage,
-			CardsPerPull: p.CardsPerPull,
-			SortOrder:    p.SortOrder,
+			ID:            p.ID,
+			Code:          p.Code,
+			Name:          p.Name,
+			Description:   p.Description,
+			Image:         p.Image,
+			NameImage:     p.NameImage,
+			CardsPerPull:  p.CardsPerPull,
+			SortOrder:     p.SortOrder,
+			Config:        unmarshalPackConfig(p.Config),
+			PoolId:        p.PoolID,
+			RotationOrder: p.RotationOrder,
+			TotalCards:    p.TotalCards,
 		}
 	}
 	return items
