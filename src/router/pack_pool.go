@@ -32,10 +32,11 @@ func PackPool(router *gin.RouterGroup, d PackPoolDependency) {
 	{
 		admin.GET("", handler.FindAll)
 		admin.POST("", handler.CreateOne)
-		admin.POST("reorder", handler.Reorder)
+		admin.POST("sort", handler.Sort)
 		admin.GET(":id/detail", handler.FindOneById)
 		admin.PATCH(":id", handler.UpdateOneById)
 		admin.DELETE(":id", handler.DeleteOneById)
-		admin.POST(":id/reorder-packs", handler.ReorderPacks)
+		admin.POST(":id/sort-packs", handler.SortPacks)
+		admin.POST(":id/sort-rotation", handler.SortRotation)
 	}
 }

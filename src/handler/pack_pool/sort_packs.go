@@ -8,21 +8,21 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
-type reorderPacksUri struct {
+type sortPacksUri struct {
 	ID string `uri:"id" validate:"required,uuid"`
 }
 
-type reorderPacksRequest struct {
+type sortPacksRequest struct {
 	Ids []string `json:"ids" validate:"required,min=1,dive,uuid"`
 }
 
-func (h Handler) ReorderPacks(c *gin.Context) {
-	var uri reorderPacksUri
+func (h Handler) SortPacks(c *gin.Context) {
+	var uri sortPacksUri
 	if !binder.ShouldBindUri(c, &uri) {
 		return
 	}
 
-	var request reorderPacksRequest
+	var request sortPacksRequest
 	if !binder.ShouldBindJson(c, &request) {
 		return
 	}

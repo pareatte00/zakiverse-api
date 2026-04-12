@@ -8,13 +8,13 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
-type reorderRequest struct {
+type sortRequest struct {
 	BannerType string   `json:"banner_type" validate:"required,oneof=standard featured event beginner seasonal"`
 	Ids        []string `json:"ids" validate:"required,min=1,dive,uuid"`
 }
 
-func (h Handler) Reorder(c *gin.Context) {
-	var request reorderRequest
+func (h Handler) Sort(c *gin.Context) {
+	var request sortRequest
 	if !binder.ShouldBindJson(c, &request) {
 		return
 	}

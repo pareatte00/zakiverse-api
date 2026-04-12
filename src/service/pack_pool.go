@@ -442,3 +442,39 @@ func (s *PackPoolService) Reorder(ctx context.Context, bannerType string, ids []
 
 	return code.OK()
 }
+
+// ReorderRotation reorders rotation_order of packs within a pool. ids must contain ALL pack IDs belonging to the pool.
+func (s *PackPoolService) ReorderRotation(ctx context.Context, poolId string, ids []string) code.I {
+	_, err := s.service.repository.PackPool.FindOneById(ctx, poolId)
+	if err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return code.ModelNotFound.Err()
+		}
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	existingIds, err := s.service.repository.Pack.FindIdsByPoolId(ctx, poolId)
+	if err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	if len(ids) != len(existingIds) {
+		return code.HttpBadRequest.Err()
+	}
+
+	existingSet := make(map[string]bool, len(existingIds))
+	for _, id := range existingIds {
+		existingSet[id.String()] = true
+	}
+	for _, id := range ids {
+		if !existingSet[id] {
+			return code.HttpBadRequest.Err()
+		}
+	}
+
+	if err := s.service.repository.Pack.ReorderRotation(ctx, ids); err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	return code.OK()
+}

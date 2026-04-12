@@ -86,12 +86,9 @@ func (s *Scheduler) rotateDuePools(ctx context.Context, now time.Time) {
 		}
 
 		// Activate top active_count packs
-		activateCount := int(pool.ActiveCount)
-		if activateCount > len(packs) {
-			activateCount = len(packs)
-		}
+		activateCount := min(int(pool.ActiveCount), len(packs))
 
-		for i := 0; i < activateCount; i++ {
+		for i := range activateCount {
 			packId := packs[i].ID.String()
 			if err := s.repository.Pack.SetPoolActivatedAt(ctx, packId, now); err != nil {
 				log.Printf("[pool-scheduler] error activating pack %s: %v", packId, err)
