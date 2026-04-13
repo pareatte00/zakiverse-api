@@ -106,13 +106,16 @@ func toPackPoolPackItems(packs []packRepo.PackWithCardCount) []PackPoolPackItem 
 	return items
 }
 
-func computeNextRotationAt(rotationType string, rotationDay *int32, rotationInterval int32, rotationHour int32) *time.Time {
+// computeNextRotationAt calculates the next rotation time from now.
+// rotation_hour is in the admin's local timezone (defined by timezoneOffset).
+// The result is always in UTC.
+func computeNextRotationAt(rotationType string, rotationDay *int32, rotationHour int32, timezoneOffset int32) *time.Time {
 	if rotationType == "none" {
 		return nil
 	}
 
 	now := time.Now().UTC()
-	loc := time.UTC
+	utcHour := int(rotationHour) - int(timezoneOffset)
 
 	switch rotationType {
 	case "weekly":
@@ -120,39 +123,39 @@ func computeNextRotationAt(rotationType string, rotationDay *int32, rotationInte
 		if rotationDay != nil {
 			day = int(*rotationDay)
 		}
-		// Find next occurrence of this weekday at the specified hour
+		// Find next occurrence of this weekday at the specified hour (UTC)
 		daysUntil := (day - int(now.Weekday()) + 7) % 7
-		if daysUntil == 0 && now.Hour() >= int(rotationHour) {
-			daysUntil = 7
+		candidate := time.Date(now.Year(), now.Month(), now.Day()+daysUntil, utcHour, 0, 0, 0, time.UTC)
+		if !candidate.After(now) {
+			candidate = candidate.AddDate(0, 0, 7)
 		}
-		// Add interval weeks (first rotation at 1 interval)
-		if daysUntil == 7 {
-			daysUntil = int(rotationInterval) * 7
-		} else {
-			daysUntil += (int(rotationInterval) - 1) * 7
-		}
-		next := time.Date(now.Year(), now.Month(), now.Day()+daysUntil, int(rotationHour), 0, 0, 0, loc)
-		return &next
+		return &candidate
 
 	case "monthly":
 		day := 1
 		if rotationDay != nil {
 			day = int(*rotationDay)
 		}
-		// Find next occurrence of this day of month
-		next := time.Date(now.Year(), now.Month(), day, int(rotationHour), 0, 0, 0, loc)
-		if !next.After(now) {
-			next = time.Date(now.Year(), now.Month()+1, day, int(rotationHour), 0, 0, 0, loc)
+		candidate := clampedMonthDay(now.Year(), now.Month(), day, utcHour)
+		if !candidate.After(now) {
+			candidate = clampedMonthDay(now.Year(), now.Month()+1, day, utcHour)
 		}
-		// Clamp to last day of month if needed
-		lastDay := time.Date(next.Year(), next.Month()+1, 0, 0, 0, 0, 0, loc).Day()
-		if day > lastDay {
-			next = time.Date(next.Year(), next.Month(), lastDay, int(rotationHour), 0, 0, 0, loc)
-		}
-		return &next
+		return &candidate
 	}
 
 	return nil
+}
+
+// clampedMonthDay creates a time for the given year/month/day, clamping the day
+// to the last day of the month if it exceeds it.
+func clampedMonthDay(year int, month time.Month, day int, hour int) time.Time {
+	// Normalize month (e.g. month=13 → next year January)
+	t := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+	lastDay := time.Date(t.Year(), t.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	if day > lastDay {
+		day = lastDay
+	}
+	return time.Date(t.Year(), t.Month(), day, hour, 0, 0, 0, time.UTC)
 }
 
 type CreatePackPoolParam struct {
@@ -169,6 +172,7 @@ type CreatePackPoolParam struct {
 	RotationDay       *int32
 	RotationInterval  int32
 	RotationHour      int32
+	TimezoneOffset    int32
 	RotationOrderMode string
 	PreviewDays       int32
 }
@@ -182,7 +186,7 @@ type FindAllPackPoolsParam struct {
 }
 
 func (s *PackPoolService) CreateOne(ctx context.Context, param CreatePackPoolParam) (PackPoolPayload, code.I) {
-	nextRotationAt := computeNextRotationAt(param.RotationType, param.RotationDay, param.RotationInterval, param.RotationHour)
+	nextRotationAt := computeNextRotationAt(param.RotationType, param.RotationDay, param.RotationHour, param.TimezoneOffset)
 
 	pool, err := s.service.repository.PackPool.CreateOne(ctx, poolRepo.CreateOneParam{
 		Name:              param.Name,
@@ -328,8 +332,9 @@ func (s *PackPoolService) UpdateOneById(ctx context.Context, id string, updates 
 	_, hasRotationDay := updates["rotation_day"]
 	_, hasRotationInterval := updates["rotation_interval"]
 	_, hasRotationHour := updates["rotation_hour"]
+	_, hasTimezoneOffset := updates["timezone_offset"]
 
-	if hasRotationType || hasRotationDay || hasRotationInterval || hasRotationHour {
+	if hasRotationType || hasRotationDay || hasRotationInterval || hasRotationHour || hasTimezoneOffset {
 		// Fetch current pool to merge with updates
 		current, err := s.service.repository.PackPool.FindOneById(ctx, id)
 		if err != nil {
@@ -355,16 +360,6 @@ func (s *PackPoolService) UpdateOneById(ctx context.Context, id string, updates 
 			}
 		}
 
-		rotationInterval := current.RotationInterval
-		if v, ok := updates["rotation_interval"]; ok {
-			switch val := v.(type) {
-			case int32:
-				rotationInterval = val
-			case float64:
-				rotationInterval = int32(val)
-			}
-		}
-
 		rotationHour := current.RotationHour
 		if v, ok := updates["rotation_hour"]; ok {
 			switch val := v.(type) {
@@ -375,9 +370,22 @@ func (s *PackPoolService) UpdateOneById(ctx context.Context, id string, updates 
 			}
 		}
 
-		nextRotationAt := computeNextRotationAt(rotationType, rotationDay, rotationInterval, rotationHour)
+		var timezoneOffset int32
+		if v, ok := updates["timezone_offset"]; ok {
+			switch val := v.(type) {
+			case int32:
+				timezoneOffset = val
+			case float64:
+				timezoneOffset = int32(val)
+			}
+		}
+
+		nextRotationAt := computeNextRotationAt(rotationType, rotationDay, rotationHour, timezoneOffset)
 		updates["next_rotation_at"] = nextRotationAt
 	}
+
+	// timezone_offset is input-only, not a DB column
+	delete(updates, "timezone_offset")
 
 	pool, err := s.service.repository.PackPool.UpdateOneById(ctx, id, updates)
 	if err != nil {

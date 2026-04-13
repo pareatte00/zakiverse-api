@@ -105,21 +105,18 @@ func (s *Scheduler) rotateDuePools(ctx context.Context, now time.Time) {
 	}
 }
 
+// computeNextRotationAt advances the existing next_rotation_at (already in UTC) by the pool's interval.
+// For weekly: adds rotation_interval * 7 days.
+// For monthly: advances to same day next month (clamped to last day), preserving the UTC hour.
 func computeNextRotationAt(pool model.PackPool, now time.Time) *time.Time {
-	loc := time.UTC
+	if pool.NextRotationAt == nil {
+		return nil
+	}
+	prev := *pool.NextRotationAt
 
 	switch pool.RotationType {
 	case model.RotationType_Weekly:
-		day := 0
-		if pool.RotationDay != nil {
-			day = int(*pool.RotationDay)
-		}
-		daysUntil := (day - int(now.Weekday()) + 7) % 7
-		if daysUntil == 0 {
-			daysUntil = 7
-		}
-		daysUntil += (int(pool.RotationInterval) - 1) * 7
-		next := time.Date(now.Year(), now.Month(), now.Day()+daysUntil, int(pool.RotationHour), 0, 0, 0, loc)
+		next := prev.AddDate(0, 0, int(pool.RotationInterval)*7)
 		return &next
 
 	case model.RotationType_Monthly:
@@ -127,13 +124,20 @@ func computeNextRotationAt(pool model.PackPool, now time.Time) *time.Time {
 		if pool.RotationDay != nil {
 			day = int(*pool.RotationDay)
 		}
-		next := time.Date(now.Year(), now.Month()+1, day, int(pool.RotationHour), 0, 0, 0, loc)
-		lastDay := time.Date(next.Year(), next.Month()+1, 0, 0, 0, 0, 0, loc).Day()
-		if day > lastDay {
-			next = time.Date(next.Year(), next.Month(), lastDay, int(pool.RotationHour), 0, 0, 0, loc)
-		}
+		next := clampedMonthDay(prev.Year(), prev.Month()+1, day, prev.Hour())
 		return &next
 	}
 
 	return nil
+}
+
+// clampedMonthDay creates a time for the given year/month/day, clamping the day
+// to the last day of the month if it exceeds it.
+func clampedMonthDay(year int, month time.Month, day int, hour int) time.Time {
+	t := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+	lastDay := time.Date(t.Year(), t.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	if day > lastDay {
+		day = lastDay
+	}
+	return time.Date(t.Year(), t.Month(), day, hour, 0, 0, 0, time.UTC)
 }

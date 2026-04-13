@@ -24,6 +24,7 @@ type createOneRequest struct {
 	RotationDay       *int32     `json:"rotation_day" validate:"omitempty,min=0,max=31"`
 	RotationInterval  int32      `json:"rotation_interval" validate:"min=1"`
 	RotationHour      int32      `json:"rotation_hour" validate:"min=0,max=23"`
+	TimezoneOffset    int32      `json:"timezone_offset" validate:"min=-12,max=14"`
 	RotationOrderMode string     `json:"rotation_order_mode" validate:"required,oneof=auto manual"`
 	PreviewDays       int32      `json:"preview_days" validate:"min=0"`
 }
@@ -48,6 +49,7 @@ func (h Handler) CreateOne(c *gin.Context) {
 		RotationDay:       request.RotationDay,
 		RotationInterval:  request.RotationInterval,
 		RotationHour:      request.RotationHour,
+		TimezoneOffset:    request.TimezoneOffset,
 		RotationOrderMode: request.RotationOrderMode,
 		PreviewDays:       request.PreviewDays,
 	})

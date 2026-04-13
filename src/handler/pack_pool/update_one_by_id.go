@@ -28,6 +28,7 @@ type updateOneByIdRequest struct {
 	RotationDay       *int32     `json:"rotation_day" validate:"omitempty,min=0,max=31"`
 	RotationInterval  *int32     `json:"rotation_interval" validate:"omitempty,min=1"`
 	RotationHour      *int32     `json:"rotation_hour" validate:"omitempty,min=0,max=23"`
+	TimezoneOffset    *int32     `json:"timezone_offset" validate:"omitempty,min=-12,max=14"`
 	RotationOrderMode *string    `json:"rotation_order_mode" validate:"omitempty,oneof=auto manual"`
 	PreviewDays       *int32     `json:"preview_days" validate:"omitempty,min=0"`
 }
@@ -52,7 +53,7 @@ func (h Handler) UpdateOneById(c *gin.Context) {
 		"name", "description", "image", "banner_type", "sort_order",
 		"is_active", "open_at", "close_at", "active_count",
 		"rotation_type", "rotation_day", "rotation_interval", "rotation_hour",
-		"rotation_order_mode", "preview_days",
+		"timezone_offset", "rotation_order_mode", "preview_days",
 	)
 
 	payload, codeErr := h.service.PackPool.UpdateOneById(c.Request.Context(), uri.ID, updates)
