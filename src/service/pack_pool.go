@@ -40,6 +40,7 @@ type PackPoolPayload struct {
 	PreviewDays       int32              `json:"preview_days"`
 	IsPreview         bool               `json:"is_preview"`
 	Packs             []PackPoolPackItem `json:"packs,omitempty"`
+	NextPacks         []PackPoolPackItem `json:"next_packs,omitempty"`
 	CreatedAt         time.Time          `json:"created_at"`
 	UpdatedAt         time.Time          `json:"updated_at"`
 }
@@ -277,7 +278,7 @@ func (s *PackPoolService) FindActiveBanners(ctx context.Context) ([]PackPoolPayl
 
 	for _, pool := range activePools {
 		payload := toPackPoolPayload(pool)
-		// Fetch current packs for this pool
+		// Current packs for active pools
 		packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
 		if err == nil {
 			payload.Packs = toPackPoolPackItems(packs)
@@ -288,15 +289,42 @@ func (s *PackPoolService) FindActiveBanners(ctx context.Context) ([]PackPoolPayl
 	for _, pool := range previewPools {
 		payload := toPackPoolPayload(pool)
 		payload.IsPreview = true
-		// For preview pools, show what packs will be available
+		// Current packs
 		packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
 		if err == nil {
 			payload.Packs = toPackPoolPackItems(packs)
+		}
+		// Next rotation packs
+		if string(pool.RotationType) != "none" {
+			nextPacks, err := s.service.repository.Pack.FindNextRotationByPool(ctx, pool.ID.String(), pool.ActiveCount)
+			if err == nil {
+				payload.NextPacks = toPackPoolPackItemsFromPacks(nextPacks)
+			}
 		}
 		payloads = append(payloads, payload)
 	}
 
 	return payloads, code.OK()
+}
+
+func toPackPoolPackItemsFromPacks(packs []model.Pack) []PackPoolPackItem {
+	items := make([]PackPoolPackItem, len(packs))
+	for i, p := range packs {
+		items[i] = PackPoolPackItem{
+			ID:            p.ID,
+			Code:          p.Code,
+			Name:          p.Name,
+			Description:   p.Description,
+			Image:         p.Image,
+			NameImage:     p.NameImage,
+			CardsPerPull:  p.CardsPerPull,
+			SortOrder:     p.SortOrder,
+			Config:        unmarshalPackConfig(p.Config),
+			PoolId:        p.PoolID,
+			RotationOrder: p.RotationOrder,
+		}
+	}
+	return items
 }
 
 func (s *PackPoolService) UpdateOneById(ctx context.Context, id string, updates map[string]any) (PackPoolPayload, code.I) {
