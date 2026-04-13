@@ -12,8 +12,9 @@ import (
 type PullHistoryWithCard struct {
 	model.AccountPullHistory
 
-	CardName  string `alias:"card.name"`
-	CardImage string `alias:"card.image"`
+	CardName  string  `alias:"card.name"`
+	CardImage string  `alias:"card.image"`
+	TagName   *string `alias:"card_tag.name"`
 }
 
 type FindByAccountAndPackParam struct {
@@ -30,8 +31,11 @@ func (r *Repository) FindByAccountAndPack(ctx context.Context, param FindByAccou
 		AccountPullHistory.AllColumns,
 		Card.Name,
 		Card.Image,
+		CardTag.Name,
 	).FROM(
-		AccountPullHistory.INNER_JOIN(Card, Card.ID.EQ(AccountPullHistory.CardID)),
+		AccountPullHistory.
+			INNER_JOIN(Card, Card.ID.EQ(AccountPullHistory.CardID)).
+			LEFT_JOIN(CardTag, CardTag.ID.EQ(Card.TagID)),
 	).WHERE(
 		AccountPullHistory.AccountID.EQ(postgres.CAST(postgres.String(param.AccountId)).AS_UUID()).
 			AND(AccountPullHistory.PackID.EQ(postgres.CAST(postgres.String(param.PackId)).AS_UUID())),
