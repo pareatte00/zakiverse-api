@@ -12,7 +12,8 @@ type Repository struct {
 type CardWithAnime struct {
 	model.Card
 
-	Anime model.Anime
+	Anime  model.Anime
+	TagName *string `alias:"card_tag.name"`
 }
 
 type PackCardWithCard struct {

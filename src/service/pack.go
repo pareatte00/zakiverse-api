@@ -52,6 +52,7 @@ type PackCardPayload struct {
 	FeaturedRate *float64             `json:"featured_rate"`
 	Name         string               `json:"name"`
 	Image        string               `json:"image"`
+	TagName      *string              `json:"tag_name"`
 	Rarity       model.CardRarity     `json:"rarity"`
 	Anime        PackCardAnimePayload `json:"anime"`
 }
@@ -97,6 +98,7 @@ func toPackCardPayloads(cards []packRepo.PackCardWithCard) []PackCardPayload {
 			FeaturedRate: c.FeaturedRate,
 			Name:         c.Card.Name,
 			Image:        c.Card.Image,
+			TagName:      c.Card.TagName,
 			Rarity:       c.Card.Rarity,
 			Anime: PackCardAnimePayload{
 				Title:      c.Card.Anime.Title,
