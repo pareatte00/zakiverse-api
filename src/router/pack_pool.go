@@ -27,6 +27,7 @@ func PackPool(router *gin.RouterGroup, d PackPoolDependency) {
 	{
 		auth.GET("active", handler.FindActiveBanners)
 		auth.GET(":id", handler.FindOneWithPacks)
+		auth.GET(":id/next-packs", handler.FindNextPacks)
 	}
 	admin := r.Use(d.Middleware.AuthJWT, d.Middleware.AuthAdmin)
 	{

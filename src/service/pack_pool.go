@@ -40,7 +40,6 @@ type PackPoolPayload struct {
 	PreviewDays       int32              `json:"preview_days"`
 	IsPreview         bool               `json:"is_preview"`
 	Packs             []PackPoolPackItem `json:"packs,omitempty"`
-	NextPacks         []PackPoolPackItem `json:"next_packs,omitempty"`
 	CreatedAt         time.Time          `json:"created_at"`
 	UpdatedAt         time.Time          `json:"updated_at"`
 }
@@ -261,55 +260,45 @@ func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsPar
 }
 
 func (s *PackPoolService) FindActiveBanners(ctx context.Context) ([]PackPoolPayload, code.I) {
-	// Get active pools
-	activePools, err := s.service.repository.PackPool.FindActive(ctx)
+	pools, err := s.service.repository.PackPool.FindActiveBanners(ctx)
 	if err != nil {
 		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
-	// Get preview pools
-	previewPools, err := s.service.repository.PackPool.FindPreview(ctx, time.Now().UTC())
-	if err != nil {
-		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
-	}
+	payloads := make([]PackPoolPayload, len(pools))
 
-	// Build payloads
-	payloads := make([]PackPoolPayload, 0, len(activePools)+len(previewPools))
-
-	for _, pool := range activePools {
+	for i, pool := range pools {
 		payload := toPackPoolPayload(pool)
-		// Current packs for active pools
 		packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
 		if err == nil {
 			payload.Packs = toPackPoolPackItems(packs)
 		}
-		payloads = append(payloads, payload)
-	}
-
-	for _, pool := range previewPools {
-		payload := toPackPoolPayload(pool)
-		payload.IsPreview = true
-		// Current packs
-		packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
-		if err == nil {
-			payload.Packs = toPackPoolPackItems(packs)
-		}
-		// Next rotation packs
-		if string(pool.RotationType) != "none" {
-			nextPacks, err := s.service.repository.Pack.FindNextRotationByPool(ctx, pool.ID.String(), pool.ActiveCount)
-			if err == nil {
-				payload.NextPacks = toPackPoolPackItemsFromPacks(nextPacks)
-			}
-		}
-		payloads = append(payloads, payload)
+		payloads[i] = payload
 	}
 
 	return payloads, code.OK()
 }
 
-func toPackPoolPackItemsFromPacks(packs []model.Pack) []PackPoolPackItem {
-	items := make([]PackPoolPackItem, len(packs))
-	for i, p := range packs {
+func (s *PackPoolService) FindNextPacks(ctx context.Context, id string) ([]PackPoolPackItem, code.I) {
+	pool, err := s.service.repository.PackPool.FindOneById(ctx, id)
+	if err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return nil, code.ModelNotFound.Err()
+		}
+		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	if string(pool.RotationType) == "none" {
+		return nil, code.OK()
+	}
+
+	nextPacks, err := s.service.repository.Pack.FindNextRotationByPool(ctx, pool.ID.String(), pool.ActiveCount)
+	if err != nil {
+		return nil, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	items := make([]PackPoolPackItem, len(nextPacks))
+	for i, p := range nextPacks {
 		items[i] = PackPoolPackItem{
 			ID:            p.ID,
 			Code:          p.Code,
@@ -324,7 +313,8 @@ func toPackPoolPackItemsFromPacks(packs []model.Pack) []PackPoolPackItem {
 			RotationOrder: p.RotationOrder,
 		}
 	}
-	return items
+
+	return items, code.OK()
 }
 
 func (s *PackPoolService) UpdateOneById(ctx context.Context, id string, updates map[string]any) (PackPoolPayload, code.I) {
