@@ -162,21 +162,28 @@ func (s *PackService) FindOneById(ctx context.Context, id string) (PackPayload, 
 }
 
 type FindAllPacksParam struct {
-	Page  int64
-	Limit int64
+	Search     string
+	Unassigned bool
+	Page       int64
+	Limit      int64
 }
 
 func (s *PackService) FindAll(ctx context.Context, param FindAllPacksParam) ([]PackPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
 
-	total, err := s.service.repository.Pack.Count(ctx)
+	total, err := s.service.repository.Pack.Count(ctx, packRepo.CountParam{
+		Search:     param.Search,
+		Unassigned: param.Unassigned,
+	})
 	if err != nil {
 		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	packs, err := s.service.repository.Pack.FindAll(ctx, packRepo.FindAllParam{
-		Limit:  param.Limit,
-		Offset: offset,
+		Search:     param.Search,
+		Unassigned: param.Unassigned,
+		Limit:      param.Limit,
+		Offset:     offset,
 	})
 	if err != nil {
 		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))

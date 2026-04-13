@@ -207,18 +207,6 @@ func (s *PackPoolService) CreateOne(ctx context.Context, param CreatePackPoolPar
 	return toPackPoolPayload(pool), code.OK()
 }
 
-func (s *PackPoolService) FindOneById(ctx context.Context, id string) (PackPoolPayload, code.I) {
-	pool, err := s.service.repository.PackPool.FindOneById(ctx, id)
-	if err != nil {
-		if errors.Is(err, qrm.ErrNoRows) {
-			return PackPoolPayload{}, code.ModelNotFound.Err()
-		}
-		return PackPoolPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
-	}
-
-	return toPackPoolPayload(pool), code.OK()
-}
-
 func (s *PackPoolService) FindOneByIdWithPacks(ctx context.Context, id string) (PackPoolPayload, code.I) {
 	pool, err := s.service.repository.PackPool.FindOneById(ctx, id)
 	if err != nil {

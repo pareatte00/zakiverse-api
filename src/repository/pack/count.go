@@ -8,14 +8,28 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-func (r *Repository) Count(ctx context.Context) (int64, error) {
+type CountParam struct {
+	Search     string
+	Unassigned bool
+}
+
+func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error) {
 	var dest struct {
 		Count int64
 	}
 
+	condition := postgres.Bool(true)
+	if param.Search != "" {
+		search := postgres.String("%" + param.Search + "%")
+		condition = condition.AND(postgres.LOWER(Pack.Name).LIKE(postgres.LOWER(search)))
+	}
+	if param.Unassigned {
+		condition = condition.AND(Pack.PoolID.IS_NULL())
+	}
+
 	stmt := postgres.SELECT(
 		postgres.COUNT(postgres.STAR).AS("count"),
-	).FROM(Pack)
+	).FROM(Pack).WHERE(condition)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
 	if err != nil {

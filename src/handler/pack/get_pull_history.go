@@ -14,9 +14,9 @@ type getPullHistoryUri struct {
 	ID string `uri:"id" validate:"required,uuid"`
 }
 
-type getPullHistoryQuery struct {
-	Page  int64 `form:"page" validate:"required,min=1"`
-	Limit int64 `form:"limit" validate:"required,min=1,max=100"`
+type getPullHistoryRequest struct {
+	Page  int64 `json:"page" validate:"required,min=1"`
+	Limit int64 `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) GetPullHistory(c *gin.Context) {
@@ -25,8 +25,8 @@ func (h Handler) GetPullHistory(c *gin.Context) {
 		return
 	}
 
-	var query getPullHistoryQuery
-	if !binder.ShouldBindQuery(c, &query) {
+	var request getPullHistoryRequest
+	if !binder.ShouldBindJson(c, &request) {
 		return
 	}
 
@@ -35,8 +35,8 @@ func (h Handler) GetPullHistory(c *gin.Context) {
 	payload, meta, codeErr := h.service.Pack.GetPullHistory(c.Request.Context(), service.FindPullHistoryParam{
 		AccountId: accountId,
 		PackId:    uri.ID,
-		Page:      query.Page,
-		Limit:     query.Limit,
+		Page:      request.Page,
+		Limit:     request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

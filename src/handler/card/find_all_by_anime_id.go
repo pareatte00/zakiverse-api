@@ -13,9 +13,9 @@ type findAllByAnimeIdUri struct {
 	AnimeId string `uri:"animeId" validate:"required,uuid"`
 }
 
-type findAllByAnimeIdQuery struct {
-	Page  int64 `form:"page" validate:"required,min=1"`
-	Limit int64 `form:"limit" validate:"required,min=1,max=100"`
+type findAllByAnimeIdRequest struct {
+	Page  int64 `json:"page" validate:"required,min=1"`
+	Limit int64 `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindAllByAnimeId(c *gin.Context) {
@@ -24,15 +24,15 @@ func (h Handler) FindAllByAnimeId(c *gin.Context) {
 		return
 	}
 
-	var query findAllByAnimeIdQuery
-	if !binder.ShouldBindQuery(c, &query) {
+	var request findAllByAnimeIdRequest
+	if !binder.ShouldBindJson(c, &request) {
 		return
 	}
 
 	payload, meta, codeErr := h.service.Card.FindAllByAnimeId(c.Request.Context(), service.FindAllCardsByAnimeIdParam{
 		AnimeId: uri.AnimeId,
-		Page:    query.Page,
-		Limit:   query.Limit,
+		Page:    request.Page,
+		Limit:   request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

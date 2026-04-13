@@ -10,14 +10,14 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
-type findMyCardsQuery struct {
-	Page  int64 `form:"page" validate:"required,min=1"`
-	Limit int64 `form:"limit" validate:"required,min=1,max=100"`
+type findMyCardsRequest struct {
+	Page  int64 `json:"page" validate:"required,min=1"`
+	Limit int64 `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindMyCards(c *gin.Context) {
-	var query findMyCardsQuery
-	if !binder.ShouldBindQuery(c, &query) {
+	var request findMyCardsRequest
+	if !binder.ShouldBindJson(c, &request) {
 		return
 	}
 
@@ -25,8 +25,8 @@ func (h Handler) FindMyCards(c *gin.Context) {
 
 	payload, meta, codeErr := h.service.AccountCard.FindMyCards(c.Request.Context(), service.FindMyCardsParam{
 		AccountId: accountId,
-		Page:      query.Page,
-		Limit:     query.Limit,
+		Page:      request.Page,
+		Limit:     request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

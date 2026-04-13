@@ -9,24 +9,24 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
-type findAllQuery struct {
-	BannerType string `form:"banner_type" validate:"omitempty,oneof=standard featured event beginner seasonal"`
-	ActiveOnly bool   `form:"active_only"`
-	Page       int64  `form:"page" validate:"required,min=1"`
-	Limit      int64  `form:"limit" validate:"required,min=1,max=100"`
+type findAllRequest struct {
+	BannerType string `json:"banner_type" validate:"omitempty,oneof=standard featured event beginner seasonal"`
+	ActiveOnly bool   `json:"active_only"`
+	Page       int64  `json:"page" validate:"required,min=1"`
+	Limit      int64  `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindAll(c *gin.Context) {
-	var query findAllQuery
-	if !binder.ShouldBindQuery(c, &query) {
+	var request findAllRequest
+	if !binder.ShouldBindJson(c, &request) {
 		return
 	}
 
 	payload, meta, codeErr := h.service.PackPool.FindAll(c.Request.Context(), service.FindAllPackPoolsParam{
-		BannerType: query.BannerType,
-		ActiveOnly: query.ActiveOnly,
-		Page:       query.Page,
-		Limit:      query.Limit,
+		BannerType: request.BannerType,
+		ActiveOnly: request.ActiveOnly,
+		Page:       request.Page,
+		Limit:      request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
