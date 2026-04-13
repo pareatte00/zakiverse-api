@@ -39,6 +39,7 @@ type PackPoolPayload struct {
 	LastRotatedAt     *time.Time         `json:"last_rotated_at"`
 	PreviewDays       int32              `json:"preview_days"`
 	IsPreview         bool               `json:"is_preview"`
+	HasPreview        bool               `json:"has_preview"`
 	Packs             []PackPoolPackItem `json:"packs,omitempty"`
 	CreatedAt         time.Time          `json:"created_at"`
 	UpdatedAt         time.Time          `json:"updated_at"`
@@ -269,6 +270,10 @@ func (s *PackPoolService) FindActiveBanners(ctx context.Context) ([]PackPoolPayl
 
 	for i, pool := range pools {
 		payload := toPackPoolPayload(pool)
+		if string(pool.RotationType) != "none" && pool.PreviewDays > 0 && pool.NextRotationAt != nil {
+			previewStart := pool.NextRotationAt.AddDate(0, 0, -int(pool.PreviewDays))
+			payload.HasPreview = time.Now().UTC().After(previewStart)
+		}
 		packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
 		if err == nil {
 			payload.Packs = toPackPoolPackItems(packs)
