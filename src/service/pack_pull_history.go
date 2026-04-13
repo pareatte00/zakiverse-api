@@ -15,6 +15,8 @@ type PullHistoryPayload struct {
 	ID         uuid.UUID `json:"id"`
 	PackId     uuid.UUID `json:"pack_id"`
 	CardId     uuid.UUID `json:"card_id"`
+	CardName   string    `json:"card_name"`
+	CardImage  string    `json:"card_image"`
 	Rarity     string    `json:"rarity"`
 	IsPity     bool      `json:"is_pity"`
 	IsFeatured bool      `json:"is_featured"`
@@ -53,6 +55,8 @@ func (s *PackService) GetPullHistory(ctx context.Context, param FindPullHistoryP
 			ID:         r.ID,
 			PackId:     r.PackID,
 			CardId:     r.CardID,
+			CardName:   r.CardName,
+			CardImage:  r.CardImage,
 			Rarity:     string(r.Rarity),
 			IsPity:     r.IsPity,
 			IsFeatured: r.IsFeatured,

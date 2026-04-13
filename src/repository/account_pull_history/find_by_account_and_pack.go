@@ -9,6 +9,13 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
+type PullHistoryWithCard struct {
+	model.AccountPullHistory
+
+	CardName  string `alias:"card.name"`
+	CardImage string `alias:"card.image"`
+}
+
 type FindByAccountAndPackParam struct {
 	AccountId string
 	PackId    string
@@ -16,17 +23,21 @@ type FindByAccountAndPackParam struct {
 	Offset    int64
 }
 
-func (r *Repository) FindByAccountAndPack(ctx context.Context, param FindByAccountAndPackParam) ([]model.AccountPullHistory, error) {
-	var dest []model.AccountPullHistory
+func (r *Repository) FindByAccountAndPack(ctx context.Context, param FindByAccountAndPackParam) ([]PullHistoryWithCard, error) {
+	var dest []PullHistoryWithCard
 
-	stmt := postgres.SELECT(AccountPullHistory.AllColumns).
-		FROM(AccountPullHistory).
-		WHERE(
-			AccountPullHistory.AccountID.EQ(postgres.CAST(postgres.String(param.AccountId)).AS_UUID()).
-				AND(AccountPullHistory.PackID.EQ(postgres.CAST(postgres.String(param.PackId)).AS_UUID())),
-		).
-		ORDER_BY(AccountPullHistory.PulledAt.DESC()).
-		LIMIT(param.Limit).
+	stmt := postgres.SELECT(
+		AccountPullHistory.AllColumns,
+		Card.Name,
+		Card.Image,
+	).FROM(
+		AccountPullHistory.INNER_JOIN(Card, Card.ID.EQ(AccountPullHistory.CardID)),
+	).WHERE(
+		AccountPullHistory.AccountID.EQ(postgres.CAST(postgres.String(param.AccountId)).AS_UUID()).
+			AND(AccountPullHistory.PackID.EQ(postgres.CAST(postgres.String(param.PackId)).AS_UUID())),
+	).ORDER_BY(
+		AccountPullHistory.PulledAt.DESC(),
+	).LIMIT(param.Limit).
 		OFFSET(param.Offset)
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
