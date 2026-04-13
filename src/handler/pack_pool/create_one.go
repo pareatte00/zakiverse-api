@@ -14,7 +14,7 @@ type createOneRequest struct {
 	Name              string     `json:"name" validate:"required"`
 	Description       *string    `json:"description"`
 	Image             *string    `json:"image"`
-	BannerType        string     `json:"banner_type" validate:"required,oneof=standard featured event beginner seasonal"`
+	BannerType        string     `json:"banner_type" validate:"required,oneof=standard featured"`
 	SortOrder         int32      `json:"sort_order"`
 	IsActive          bool       `json:"is_active"`
 	OpenAt            *time.Time `json:"open_at"`

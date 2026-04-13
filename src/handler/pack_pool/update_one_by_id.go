@@ -18,7 +18,7 @@ type updateOneByIdRequest struct {
 	Name              *string    `json:"name" validate:"omitempty"`
 	Description       *string    `json:"description"`
 	Image             *string    `json:"image"`
-	BannerType        *string    `json:"banner_type" validate:"omitempty,oneof=standard featured event beginner seasonal"`
+	BannerType        *string    `json:"banner_type" validate:"omitempty,oneof=standard featured"`
 	SortOrder         *int32     `json:"sort_order"`
 	IsActive          *bool      `json:"is_active"`
 	OpenAt            *time.Time `json:"open_at"`

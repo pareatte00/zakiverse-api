@@ -10,7 +10,7 @@ import (
 )
 
 type findAllRequest struct {
-	BannerType string `json:"banner_type" validate:"omitempty,oneof=standard featured event beginner seasonal"`
+	BannerType string `json:"banner_type" validate:"omitempty,oneof=standard featured"`
 	ActiveOnly bool   `json:"active_only"`
 	Page       int64  `json:"page" validate:"required,min=1"`
 	Limit      int64  `json:"limit" validate:"required,min=1,max=100"`

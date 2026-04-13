@@ -1,4 +1,4 @@
-CREATE TYPE banner_type AS ENUM ('standard', 'featured', 'event', 'beginner', 'seasonal');
+CREATE TYPE banner_type AS ENUM ('standard', 'featured');
 CREATE TYPE rotation_type AS ENUM ('none', 'weekly', 'monthly');
 CREATE TYPE rotation_order_mode AS ENUM ('auto', 'manual');
 

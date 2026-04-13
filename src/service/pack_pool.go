@@ -218,8 +218,8 @@ func (s *PackPoolService) FindOneByIdWithPacks(ctx context.Context, id string) (
 
 	payload := toPackPoolPayload(pool)
 
-	// Fetch current packs
-	packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), pool.ActiveCount)
+	// Fetch all packs in this pool
+	packs, err := s.service.repository.Pack.FindCurrentByPool(ctx, pool.ID.String(), 0)
 	if err == nil {
 		payload.Packs = toPackPoolPackItems(packs)
 	}
@@ -470,6 +470,25 @@ func (s *PackPoolService) ReorderRotation(ctx context.Context, poolId string, id
 	}
 
 	if err := s.service.repository.Pack.ReorderRotation(ctx, ids); err != nil {
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	return code.OK()
+}
+
+// AssignPacks sets the given pack IDs to this pool and unassigns any packs currently
+// in the pool but not in the list. An empty list unassigns all packs.
+func (s *PackPoolService) AssignPacks(ctx context.Context, poolId string, ids []string) code.I {
+	// Validate pool exists
+	_, err := s.service.repository.PackPool.FindOneById(ctx, poolId)
+	if err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return code.ModelNotFound.Err()
+		}
+		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+	}
+
+	if err := s.service.repository.Pack.AssignToPool(ctx, poolId, ids); err != nil {
 		return code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 

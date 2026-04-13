@@ -8,18 +8,26 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
 
-type sortRequest struct {
-	BannerType string   `json:"banner_type" validate:"required,oneof=standard featured"`
-	Ids        []string `json:"ids" validate:"required,min=1,dive,uuid"`
+type assignPacksUri struct {
+	ID string `uri:"id" validate:"required,uuid"`
 }
 
-func (h Handler) Sort(c *gin.Context) {
-	var request sortRequest
+type assignPacksRequest struct {
+	Ids []string `json:"ids" validate:"dive,uuid"`
+}
+
+func (h Handler) AssignPacks(c *gin.Context) {
+	var uri assignPacksUri
+	if !binder.ShouldBindUri(c, &uri) {
+		return
+	}
+
+	var request assignPacksRequest
 	if !binder.ShouldBindJson(c, &request) {
 		return
 	}
 
-	codeErr := h.service.PackPool.Reorder(c.Request.Context(), request.BannerType, request.Ids)
+	codeErr := h.service.PackPool.AssignPacks(c.Request.Context(), uri.ID, request.Ids)
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return
