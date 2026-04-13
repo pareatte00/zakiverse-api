@@ -173,6 +173,7 @@ type CreatePackPoolParam struct {
 }
 
 type FindAllPackPoolsParam struct {
+	Search     string
 	BannerType string
 	ActiveOnly bool
 	Page       int64
@@ -231,6 +232,7 @@ func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsPar
 	offset := (param.Page - 1) * param.Limit
 
 	total, err := s.service.repository.PackPool.Count(ctx, poolRepo.CountParam{
+		Search:     param.Search,
 		BannerType: param.BannerType,
 		ActiveOnly: param.ActiveOnly,
 	})
@@ -239,6 +241,7 @@ func (s *PackPoolService) FindAll(ctx context.Context, param FindAllPackPoolsPar
 	}
 
 	pools, err := s.service.repository.PackPool.FindAll(ctx, poolRepo.FindAllParam{
+		Search:     param.Search,
 		BannerType: param.BannerType,
 		ActiveOnly: param.ActiveOnly,
 		Limit:      param.Limit,

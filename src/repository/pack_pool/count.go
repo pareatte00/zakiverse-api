@@ -9,6 +9,7 @@ import (
 )
 
 type CountParam struct {
+	Search     string
 	BannerType string
 	ActiveOnly bool
 }
@@ -19,6 +20,11 @@ func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error)
 	}
 
 	condition := postgres.Bool(true)
+
+	if param.Search != "" {
+		search := postgres.String("%" + param.Search + "%")
+		condition = condition.AND(postgres.LOWER(PackPool.Name).LIKE(postgres.LOWER(search)))
+	}
 
 	if param.BannerType != "" {
 		condition = condition.AND(PackPool.BannerType.EQ(postgres.NewEnumValue(param.BannerType)))

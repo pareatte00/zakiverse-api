@@ -10,6 +10,7 @@ import (
 )
 
 type findAllRequest struct {
+	Search     string `json:"search"`
 	BannerType string `json:"banner_type" validate:"omitempty,oneof=standard featured"`
 	ActiveOnly bool   `json:"active_only"`
 	Page       int64  `json:"page" validate:"required,min=1"`
@@ -23,6 +24,7 @@ func (h Handler) FindAll(c *gin.Context) {
 	}
 
 	payload, meta, codeErr := h.service.PackPool.FindAll(c.Request.Context(), service.FindAllPackPoolsParam{
+		Search:     request.Search,
 		BannerType: request.BannerType,
 		ActiveOnly: request.ActiveOnly,
 		Page:       request.Page,

@@ -10,6 +10,7 @@ import (
 )
 
 type FindAllParam struct {
+	Search     string
 	BannerType string
 	ActiveOnly bool
 	Limit      int64
@@ -20,6 +21,11 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]model.P
 	var dest []model.PackPool
 
 	condition := postgres.Bool(true)
+
+	if param.Search != "" {
+		search := postgres.String("%" + param.Search + "%")
+		condition = condition.AND(postgres.LOWER(PackPool.Name).LIKE(postgres.LOWER(search)))
+	}
 
 	if param.BannerType != "" {
 		condition = condition.AND(PackPool.BannerType.EQ(postgres.NewEnumValue(param.BannerType)))
