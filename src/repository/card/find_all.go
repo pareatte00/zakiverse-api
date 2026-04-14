@@ -9,13 +9,14 @@ import (
 )
 
 type FindAllParam struct {
-	Search string
-	Rarity string
-	TagId  string
-	Sort   string
-	Order  string
-	Limit  int64
-	Offset int64
+	Search  string
+	Rarity  string
+	TagId   string
+	AnimeId string
+	Sort    string
+	Order   string
+	Limit   int64
+	Offset  int64
 }
 
 func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]CardWithAnime, error) {
@@ -37,6 +38,10 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]CardWit
 
 	if param.TagId != "" {
 		condition = condition.AND(Card.TagID.EQ(postgres.CAST(postgres.String(param.TagId)).AS_UUID()))
+	}
+
+	if param.AnimeId != "" {
+		condition = condition.AND(Card.AnimeID.EQ(postgres.CAST(postgres.String(param.AnimeId)).AS_UUID()))
 	}
 
 	sortColumn := map[string]postgres.Column{

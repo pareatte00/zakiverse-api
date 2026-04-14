@@ -151,6 +151,7 @@ type FindAllCardsParam struct {
 	Search    string
 	Rarity    string
 	TagId     string
+	AnimeId   string
 	Sort      string
 	Order     string
 	Page      int64
@@ -161,66 +162,22 @@ func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]C
 	offset := (param.Page - 1) * param.Limit
 
 	total, err := s.service.repository.Card.Count(ctx, cardRepo.CountParam{
-		Search: param.Search,
-		Rarity: param.Rarity,
-		TagId:  param.TagId,
+		Search:  param.Search,
+		Rarity:  param.Rarity,
+		TagId:   param.TagId,
+		AnimeId: param.AnimeId,
 	})
 	if err != nil {
 		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	results, err := s.service.repository.Card.FindAll(ctx, cardRepo.FindAllParam{
-		Search: param.Search,
-		Rarity: param.Rarity,
-		TagId:  param.TagId,
-		Sort:   param.Sort,
-		Order:  param.Order,
-		Limit:  param.Limit,
-		Offset: offset,
-	})
-	if err != nil {
-		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
-	}
-
-	payload := make([]CardPayload, len(results))
-	for i, r := range results {
-		payload[i] = toCardPayload(r.Card, r.Anime, r.CardTag)
-	}
-
-	if param.AccountId != "" && len(payload) > 0 {
-		cardIds := make([]uuid.UUID, len(payload))
-		for i, p := range payload {
-			cardIds[i] = p.ID
-		}
-		ownedMap, err := s.service.repository.AccountCard.FindOwnedCardIds(ctx, param.AccountId, cardIds)
-		if err == nil {
-			for i := range payload {
-				owned := ownedMap[payload[i].ID]
-				payload[i].IsOwned = &owned
-			}
-		}
-	}
-
-	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
-}
-
-type FindAllCardsByAnimeIdParam struct {
-	AccountId string
-	AnimeId   string
-	Page      int64
-	Limit     int64
-}
-
-func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsByAnimeIdParam) ([]CardPayload, pagination.Meta, code.I) {
-	offset := (param.Page - 1) * param.Limit
-
-	total, err := s.service.repository.Card.CountByAnimeId(ctx, param.AnimeId)
-	if err != nil {
-		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
-	}
-
-	results, err := s.service.repository.Card.FindAllByAnimeId(ctx, cardRepo.FindAllByAnimeIdParam{
+		Search:  param.Search,
+		Rarity:  param.Rarity,
+		TagId:   param.TagId,
 		AnimeId: param.AnimeId,
+		Sort:    param.Sort,
+		Order:   param.Order,
 		Limit:   param.Limit,
 		Offset:  offset,
 	})

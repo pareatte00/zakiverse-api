@@ -9,9 +9,10 @@ import (
 )
 
 type CountParam struct {
-	Search string
-	Rarity string
-	TagId  string
+	Search  string
+	Rarity  string
+	TagId   string
+	AnimeId string
 }
 
 func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error) {
@@ -37,6 +38,10 @@ func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error)
 		condition = condition.AND(Card.TagID.EQ(postgres.CAST(postgres.String(param.TagId)).AS_UUID()))
 	}
 
+	if param.AnimeId != "" {
+		condition = condition.AND(Card.AnimeID.EQ(postgres.CAST(postgres.String(param.AnimeId)).AS_UUID()))
+	}
+
 	stmt := postgres.SELECT(
 		postgres.COUNT(postgres.STAR).AS("count"),
 	).FROM(
@@ -51,20 +56,3 @@ func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error)
 	return dest.Count, nil
 }
 
-func (r *Repository) CountByAnimeId(ctx context.Context, animeId string) (int64, error) {
-	var dest struct {
-		Count int64
-	}
-
-	stmt := postgres.SELECT(
-		postgres.COUNT(postgres.STAR).AS("count"),
-	).FROM(Card).
-		WHERE(Card.AnimeID.EQ(postgres.CAST(postgres.String(animeId)).AS_UUID()))
-
-	err := stmt.QueryContext(ctx, r.db, &dest)
-	if err != nil {
-		return 0, trace.Wrap(err)
-	}
-
-	return dest.Count, nil
-}

@@ -11,13 +11,14 @@ import (
 )
 
 type findAllRequest struct {
-	Search string `json:"search"`
-	Rarity string `json:"rarity" validate:"omitempty,oneof=common rare epic legendary prismatic"`
-	TagId  string `json:"tag_id" validate:"omitempty,uuid"`
-	Sort   string `json:"sort" validate:"omitempty,oneof=name rarity favorite"`
-	Order  string `json:"order" validate:"omitempty,oneof=asc desc"`
-	Page   int64  `json:"page" validate:"required,min=1"`
-	Limit  int64  `json:"limit" validate:"required,min=1,max=100"`
+	Search  string `json:"search"`
+	Rarity  string `json:"rarity" validate:"omitempty,oneof=common rare epic legendary prismatic"`
+	TagId   string `json:"tag_id" validate:"omitempty,uuid"`
+	AnimeId string `json:"anime_id" validate:"omitempty,uuid"`
+	Sort    string `json:"sort" validate:"omitempty,oneof=name rarity favorite"`
+	Order   string `json:"order" validate:"omitempty,oneof=asc desc"`
+	Page    int64  `json:"page" validate:"required,min=1"`
+	Limit   int64  `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindAll(c *gin.Context) {
@@ -31,6 +32,7 @@ func (h Handler) FindAll(c *gin.Context) {
 		Search:    request.Search,
 		Rarity:    request.Rarity,
 		TagId:     request.TagId,
+		AnimeId:   request.AnimeId,
 		Sort:      request.Sort,
 		Order:     request.Order,
 		Page:      request.Page,

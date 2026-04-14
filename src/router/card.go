@@ -26,7 +26,6 @@ func Card(router *gin.RouterGroup, d CardDependency) {
 	auth := r.Use(d.Middleware.AuthJWT)
 	{
 		auth.GET("", handler.FindAll)
-		auth.GET("anime/:animeId", handler.FindAllByAnimeId)
 		auth.GET(":id", handler.FindOneById)
 	}
 	admin := r.Use(d.Middleware.AuthJWT, d.Middleware.AuthAdmin)
