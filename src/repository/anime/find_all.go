@@ -10,6 +10,7 @@ import (
 )
 
 type FindAllParam struct {
+	Search string
 	Limit  int64
 	Offset int64
 }
@@ -17,8 +18,14 @@ type FindAllParam struct {
 func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]model.Anime, error) {
 	var dest []model.Anime
 
+	condition := postgres.Bool(true)
+	if param.Search != "" {
+		condition = condition.AND(Anime.Title.LIKE(postgres.String("%" + param.Search + "%")))
+	}
+
 	stmt := postgres.SELECT(Anime.AllColumns).
 		FROM(Anime).
+		WHERE(condition).
 		ORDER_BY(Anime.Title.ASC()).
 		LIMIT(param.Limit).
 		OFFSET(param.Offset)

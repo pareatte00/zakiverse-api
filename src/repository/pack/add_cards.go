@@ -31,7 +31,8 @@ func (r *Repository) AddCards(ctx context.Context, params []AddCardParam) ([]mod
 		stmt = stmt.VALUES(p.PackId, p.CardId, p.Weight, p.IsFeatured, p.FeaturedRate)
 	}
 
-	err := stmt.RETURNING(PackCard.AllColumns).QueryContext(ctx, r.db, &dest)
+	err := stmt.ON_CONFLICT(PackCard.PackID, PackCard.CardID).DO_NOTHING().
+		RETURNING(PackCard.AllColumns).QueryContext(ctx, r.db, &dest)
 	if err != nil {
 		return dest, trace.Wrap(err)
 	}

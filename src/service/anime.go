@@ -75,19 +75,23 @@ func (s *AnimeService) FindOneById(ctx context.Context, id string) (AnimePayload
 }
 
 type FindAllAnimeParam struct {
-	Page  int64
-	Limit int64
+	Search string
+	Page   int64
+	Limit  int64
 }
 
 func (s *AnimeService) FindAll(ctx context.Context, param FindAllAnimeParam) ([]AnimePayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
 
-	total, err := s.service.repository.Anime.Count(ctx)
+	total, err := s.service.repository.Anime.Count(ctx, animeRepo.CountParam{
+		Search: param.Search,
+	})
 	if err != nil {
 		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	animes, err := s.service.repository.Anime.FindAll(ctx, animeRepo.FindAllParam{
+		Search: param.Search,
 		Limit:  param.Limit,
 		Offset: offset,
 	})
