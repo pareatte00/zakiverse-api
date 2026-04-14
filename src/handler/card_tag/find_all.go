@@ -10,8 +10,9 @@ import (
 )
 
 type findAllRequest struct {
-	Page  int64 `json:"page" validate:"required,min=1"`
-	Limit int64 `json:"limit" validate:"required,min=1,max=100"`
+	Search string `json:"search"`
+	Page   int64  `json:"page" validate:"required,min=1"`
+	Limit  int64  `json:"limit" validate:"required,min=1,max=100"`
 }
 
 func (h Handler) FindAll(c *gin.Context) {
@@ -21,8 +22,9 @@ func (h Handler) FindAll(c *gin.Context) {
 	}
 
 	payload, meta, codeErr := h.service.CardTag.FindAll(c.Request.Context(), service.FindAllCardTagsParam{
-		Page:  request.Page,
-		Limit: request.Limit,
+		Search: request.Search,
+		Page:   request.Page,
+		Limit:  request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

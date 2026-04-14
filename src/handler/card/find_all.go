@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zakiverse/zakiverse-api/core/cst"
 	"github.com/zakiverse/zakiverse-api/src/service"
 	"github.com/zakiverse/zakiverse-api/util/binder"
 	"github.com/zakiverse/zakiverse-api/util/response"
@@ -26,13 +27,14 @@ func (h Handler) FindAll(c *gin.Context) {
 	}
 
 	payload, meta, codeErr := h.service.Card.FindAll(c.Request.Context(), service.FindAllCardsParam{
-		Search: request.Search,
-		Rarity: request.Rarity,
-		TagId:  request.TagId,
-		Sort:   request.Sort,
-		Order:  request.Order,
-		Page:   request.Page,
-		Limit:  request.Limit,
+		AccountId: c.GetString(cst.MiddlewareKeyAccountId),
+		Search:    request.Search,
+		Rarity:    request.Rarity,
+		TagId:     request.TagId,
+		Sort:      request.Sort,
+		Order:     request.Order,
+		Page:      request.Page,
+		Limit:     request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

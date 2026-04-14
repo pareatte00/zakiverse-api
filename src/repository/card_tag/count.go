@@ -8,7 +8,11 @@ import (
 	"github.com/zakiverse/zakiverse-api/util/trace"
 )
 
-func (r *Repository) Count(ctx context.Context) (int64, error) {
+type CountParam struct {
+	Search string
+}
+
+func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error) {
 	var dest struct {
 		Count int64
 	}
@@ -16,6 +20,10 @@ func (r *Repository) Count(ctx context.Context) (int64, error) {
 	stmt := postgres.SELECT(
 		postgres.COUNT(postgres.STAR).AS("count"),
 	).FROM(CardTag)
+
+	if param.Search != "" {
+		stmt = stmt.WHERE(CardTag.Name.LIKE(postgres.String("%" + param.Search + "%")))
+	}
 
 	err := stmt.QueryContext(ctx, r.db, &dest)
 	if err != nil {

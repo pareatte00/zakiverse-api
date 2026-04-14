@@ -48,6 +48,7 @@ type CardPayload struct {
 	TagId    uuid.UUID    `json:"tag_id"`
 	TagName  string       `json:"tag_name"`
 	Favorite int32        `json:"favorite"`
+	IsOwned  *bool        `json:"is_owned,omitempty"`
 	Anime    AnimePayload `json:"anime"`
 }
 
@@ -146,13 +147,14 @@ func (s *CardService) FindOneById(ctx context.Context, id string) (CardPayload, 
 }
 
 type FindAllCardsParam struct {
-	Search string
-	Rarity string
-	TagId  string
-	Sort   string
-	Order  string
-	Page   int64
-	Limit  int64
+	AccountId string
+	Search    string
+	Rarity    string
+	TagId     string
+	Sort      string
+	Order     string
+	Page      int64
+	Limit     int64
 }
 
 func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]CardPayload, pagination.Meta, code.I) {
@@ -183,6 +185,20 @@ func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]C
 	payload := make([]CardPayload, len(results))
 	for i, r := range results {
 		payload[i] = toCardPayload(r.Card, r.Anime, r.CardTag)
+	}
+
+	if param.AccountId != "" && len(payload) > 0 {
+		cardIds := make([]uuid.UUID, len(payload))
+		for i, p := range payload {
+			cardIds[i] = p.ID
+		}
+		ownedMap, err := s.service.repository.AccountCard.FindOwnedCardIds(ctx, param.AccountId, cardIds)
+		if err == nil {
+			for i := range payload {
+				owned := ownedMap[payload[i].ID]
+				payload[i].IsOwned = &owned
+			}
+		}
 	}
 
 	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()

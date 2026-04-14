@@ -10,6 +10,7 @@ import (
 )
 
 type FindAllParam struct {
+	Search string
 	Limit  int64
 	Offset int64
 }
@@ -17,9 +18,19 @@ type FindAllParam struct {
 func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]model.CardTag, error) {
 	var dest []model.CardTag
 
+	var where postgres.BoolExpression
+	if param.Search != "" {
+		where = CardTag.Name.LIKE(postgres.String("%" + param.Search + "%"))
+	}
+
 	stmt := postgres.SELECT(CardTag.AllColumns).
-		FROM(CardTag).
-		ORDER_BY(CardTag.Name.ASC()).
+		FROM(CardTag)
+
+	if where != nil {
+		stmt = stmt.WHERE(where)
+	}
+
+	stmt = stmt.ORDER_BY(CardTag.Name.ASC()).
 		LIMIT(param.Limit).
 		OFFSET(param.Offset)
 

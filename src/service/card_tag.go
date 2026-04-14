@@ -31,8 +31,9 @@ type CreateCardTagParam struct {
 }
 
 type FindAllCardTagsParam struct {
-	Page  int64
-	Limit int64
+	Search string
+	Page   int64
+	Limit  int64
 }
 
 var multiSpaceRe = regexp.MustCompile(`\s{2,}`)
@@ -82,12 +83,15 @@ func (s *CardTagService) FindOneById(ctx context.Context, id string) (CardTagPay
 func (s *CardTagService) FindAll(ctx context.Context, param FindAllCardTagsParam) ([]CardTagPayload, pagination.Meta, code.I) {
 	offset := (param.Page - 1) * param.Limit
 
-	total, err := s.service.repository.CardTag.Count(ctx)
+	total, err := s.service.repository.CardTag.Count(ctx, tagRepo.CountParam{
+		Search: param.Search,
+	})
 	if err != nil {
 		return nil, pagination.Meta{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
 	tags, err := s.service.repository.CardTag.FindAll(ctx, tagRepo.FindAllParam{
+		Search: param.Search,
 		Limit:  param.Limit,
 		Offset: offset,
 	})
