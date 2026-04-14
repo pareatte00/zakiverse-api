@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zakiverse/zakiverse-api/core/cst"
 	"github.com/zakiverse/zakiverse-api/src/service"
 	"github.com/zakiverse/zakiverse-api/util/binder"
 	"github.com/zakiverse/zakiverse-api/util/response"
@@ -30,9 +31,10 @@ func (h Handler) FindAllByAnimeId(c *gin.Context) {
 	}
 
 	payload, meta, codeErr := h.service.Card.FindAllByAnimeId(c.Request.Context(), service.FindAllCardsByAnimeIdParam{
-		AnimeId: uri.AnimeId,
-		Page:    request.Page,
-		Limit:   request.Limit,
+		AccountId: c.GetString(cst.MiddlewareKeyAccountId),
+		AnimeId:   uri.AnimeId,
+		Page:      request.Page,
+		Limit:     request.Limit,
 	})
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))

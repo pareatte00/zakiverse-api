@@ -22,7 +22,8 @@ func (r *Repository) Count(ctx context.Context, param CountParam) (int64, error)
 	).FROM(CardTag)
 
 	if param.Search != "" {
-		stmt = stmt.WHERE(CardTag.Name.LIKE(postgres.String("%" + param.Search + "%")))
+		search := postgres.String("%" + param.Search + "%")
+		stmt = stmt.WHERE(postgres.LOWER(CardTag.Name).LIKE(postgres.LOWER(search)))
 	}
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

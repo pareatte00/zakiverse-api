@@ -20,7 +20,8 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]model.C
 
 	var where postgres.BoolExpression
 	if param.Search != "" {
-		where = CardTag.Name.LIKE(postgres.String("%" + param.Search + "%"))
+		search := postgres.String("%" + param.Search + "%")
+		where = postgres.LOWER(CardTag.Name).LIKE(postgres.LOWER(search))
 	}
 
 	stmt := postgres.SELECT(CardTag.AllColumns).

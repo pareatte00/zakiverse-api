@@ -20,7 +20,8 @@ func (r *Repository) FindAll(ctx context.Context, param FindAllParam) ([]model.A
 
 	condition := postgres.Bool(true)
 	if param.Search != "" {
-		condition = condition.AND(Anime.Title.LIKE(postgres.String("%" + param.Search + "%")))
+		search := postgres.String("%" + param.Search + "%")
+		condition = condition.AND(postgres.LOWER(Anime.Title).LIKE(postgres.LOWER(search)))
 	}
 
 	stmt := postgres.SELECT(Anime.AllColumns).

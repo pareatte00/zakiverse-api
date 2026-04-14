@@ -205,9 +205,10 @@ func (s *CardService) FindAll(ctx context.Context, param FindAllCardsParam) ([]C
 }
 
 type FindAllCardsByAnimeIdParam struct {
-	AnimeId string
-	Page    int64
-	Limit   int64
+	AccountId string
+	AnimeId   string
+	Page      int64
+	Limit     int64
 }
 
 func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsByAnimeIdParam) ([]CardPayload, pagination.Meta, code.I) {
@@ -230,6 +231,20 @@ func (s *CardService) FindAllByAnimeId(ctx context.Context, param FindAllCardsBy
 	payload := make([]CardPayload, len(results))
 	for i, r := range results {
 		payload[i] = toCardPayload(r.Card, r.Anime, r.CardTag)
+	}
+
+	if param.AccountId != "" && len(payload) > 0 {
+		cardIds := make([]uuid.UUID, len(payload))
+		for i, p := range payload {
+			cardIds[i] = p.ID
+		}
+		ownedMap, err := s.service.repository.AccountCard.FindOwnedCardIds(ctx, param.AccountId, cardIds)
+		if err == nil {
+			for i := range payload {
+				owned := ownedMap[payload[i].ID]
+				payload[i].IsOwned = &owned
+			}
+		}
 	}
 
 	return payload, pagination.NewMeta(total, param.Page, param.Limit), code.OK()
