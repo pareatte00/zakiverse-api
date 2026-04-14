@@ -54,6 +54,7 @@ type PackCardPayload struct {
 	Image        string               `json:"image"`
 	TagName      *string              `json:"tag_name"`
 	Rarity       model.CardRarity     `json:"rarity"`
+	IsOwned      *bool                `json:"is_owned,omitempty"`
 	Anime        PackCardAnimePayload `json:"anime"`
 }
 
@@ -147,7 +148,7 @@ func (s *PackService) CreateOne(ctx context.Context, param CreatePackParam) (Pac
 	return toPackPayload(pack), code.OK()
 }
 
-func (s *PackService) FindOneById(ctx context.Context, id string) (PackPayload, code.I) {
+func (s *PackService) FindOneById(ctx context.Context, id string, accountId string) (PackPayload, code.I) {
 	result, err := s.service.repository.Pack.FindOneById(ctx, id)
 	if err != nil {
 		if errors.Is(err, qrm.ErrNoRows) {
@@ -159,6 +160,20 @@ func (s *PackService) FindOneById(ctx context.Context, id string) (PackPayload, 
 	payload := toPackPayload(result.Pack)
 	payload.Cards = toPackCardPayloads(result.Cards)
 	payload.TotalCards = int64(len(result.Cards))
+
+	if accountId != "" && len(payload.Cards) > 0 {
+		cardIds := make([]uuid.UUID, len(payload.Cards))
+		for i, c := range payload.Cards {
+			cardIds[i] = c.CardId
+		}
+		ownedMap, err := s.service.repository.AccountCard.FindOwnedCardIds(ctx, accountId, cardIds)
+		if err == nil {
+			for i := range payload.Cards {
+				owned := ownedMap[payload.Cards[i].CardId]
+				payload.Cards[i].IsOwned = &owned
+			}
+		}
+	}
 
 	return payload, code.OK()
 }

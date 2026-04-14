@@ -12,14 +12,21 @@ import (
 type PackCardWithRarity struct {
 	model.PackCard
 
-	Card model.Card
+	Card    model.Card
+	Anime   model.Anime
+	CardTag *model.CardTag
 }
 
 func (r *Repository) FindCardsWithRarity(ctx context.Context, packId string) ([]PackCardWithRarity, error) {
 	var dest []PackCardWithRarity
 
-	stmt := postgres.SELECT(PackCard.AllColumns, Card.Rarity).
-		FROM(PackCard.INNER_JOIN(Card, Card.ID.EQ(PackCard.CardID))).
+	stmt := postgres.SELECT(PackCard.AllColumns, Card.AllColumns, Anime.AllColumns, CardTag.AllColumns).
+		FROM(
+			PackCard.
+				INNER_JOIN(Card, Card.ID.EQ(PackCard.CardID)).
+				INNER_JOIN(Anime, Anime.ID.EQ(Card.AnimeID)).
+				LEFT_JOIN(CardTag, CardTag.ID.EQ(Card.TagID)),
+		).
 		WHERE(PackCard.PackID.EQ(postgres.CAST(postgres.String(packId)).AS_UUID()))
 
 	err := stmt.QueryContext(ctx, r.db, &dest)

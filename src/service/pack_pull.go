@@ -18,11 +18,17 @@ type PullResultPayload struct {
 }
 
 type PulledCardPayload struct {
-	CardId     uuid.UUID `json:"card_id"`
-	Rarity     string    `json:"rarity"`
-	IsNew      bool      `json:"is_new"`
-	IsPity     bool      `json:"is_pity"`
-	IsFeatured bool      `json:"is_featured"`
+	CardId     uuid.UUID            `json:"card_id"`
+	Rarity     string               `json:"rarity"`
+	IsNew      bool                 `json:"is_new"`
+	IsPity     bool                 `json:"is_pity"`
+	IsFeatured bool                 `json:"is_featured"`
+	Name       string               `json:"name"`
+	Image      string               `json:"image"`
+	Config     CardConfig           `json:"config"`
+	TagName    string               `json:"tag_name"`
+	Favorite   int32                `json:"favorite"`
+	Anime      PackCardAnimePayload `json:"anime"`
 }
 
 func (s *PackService) Pull(ctx context.Context, accountId string, packId string, mode string) (PullResultPayload, code.I) {
@@ -102,12 +108,24 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string,
 		rarity, isPity := rollRarity(availableRates, config.Pity, counters)
 		card, isFeatured := rollCard(cardsByRarity[rarity])
 
-		pulledCards[i] = PulledCardPayload{
+		p := PulledCardPayload{
 			CardId:     card.CardID,
 			Rarity:     rarity,
 			IsPity:     isPity,
 			IsFeatured: isFeatured,
+			Name:       card.Card.Name,
+			Image:      card.Card.Image,
+			Config:     unmarshalCardConfig(card.Card.Config),
+			Favorite:   card.Card.Favorite,
+			Anime: PackCardAnimePayload{
+				Title:      card.Anime.Title,
+				CoverImage: card.Anime.CoverImage,
+			},
 		}
+		if card.CardTag != nil {
+			p.TagName = card.CardTag.Name
+		}
+		pulledCards[i] = p
 
 		// Update pity counters: increment all, reset the one we got
 		for r := range availableRates {

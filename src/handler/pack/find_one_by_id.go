@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zakiverse/zakiverse-api/core/cst"
 	"github.com/zakiverse/zakiverse-api/util/binder"
 	"github.com/zakiverse/zakiverse-api/util/response"
 )
@@ -18,7 +19,7 @@ func (h Handler) FindOneById(c *gin.Context) {
 		return
 	}
 
-	payload, codeErr := h.service.Pack.FindOneById(c.Request.Context(), uri.ID)
+	payload, codeErr := h.service.Pack.FindOneById(c.Request.Context(), uri.ID, c.GetString(cst.MiddlewareKeyAccountId))
 	if !codeErr.OK() {
 		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
 		return
