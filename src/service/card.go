@@ -32,6 +32,7 @@ type CreateCardParam struct {
 	Config          CardConfig
 	TagId           string
 	Favorite        int32
+	AnimeId         string
 	AnimeMalId      int32
 	AnimeTitle      string
 	AnimeSynopsis   *string
@@ -91,20 +92,33 @@ func toCardPayload(card model.Card, anime model.Anime, cardTag *model.CardTag) C
 }
 
 func (s *CardService) CreateOne(ctx context.Context, param CreateCardParam) (CardPayload, code.I) {
-	anime, err := s.service.repository.Anime.FindOneByMalId(ctx, param.AnimeMalId)
-	if err != nil {
-		if !errors.Is(err, qrm.ErrNoRows) {
+	var anime model.Anime
+	var err error
+
+	if param.AnimeId != "" {
+		anime, err = s.service.repository.Anime.FindOneById(ctx, param.AnimeId)
+		if err != nil {
+			if errors.Is(err, qrm.ErrNoRows) {
+				return CardPayload{}, code.ModelNotFound.Err()
+			}
 			return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 		}
-
-		anime, err = s.service.repository.Anime.CreateOne(ctx, animeRepo.CreateOneParam{
-			MalId:      param.AnimeMalId,
-			Title:      param.AnimeTitle,
-			Synopsis:   param.AnimeSynopsis,
-			CoverImage: param.AnimeCoverImage,
-		})
+	} else {
+		anime, err = s.service.repository.Anime.FindOneByMalId(ctx, param.AnimeMalId)
 		if err != nil {
-			return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+			if !errors.Is(err, qrm.ErrNoRows) {
+				return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+			}
+
+			anime, err = s.service.repository.Anime.CreateOne(ctx, animeRepo.CreateOneParam{
+				MalId:      param.AnimeMalId,
+				Title:      param.AnimeTitle,
+				Synopsis:   param.AnimeSynopsis,
+				CoverImage: param.AnimeCoverImage,
+			})
+			if err != nil {
+				return CardPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
+			}
 		}
 	}
 
