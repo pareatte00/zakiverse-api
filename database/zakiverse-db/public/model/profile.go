@@ -12,10 +12,10 @@ import (
 	"time"
 )
 
-type AccountCard struct {
-	ID         uuid.UUID `sql:"primary_key"`
-	AccountID  uuid.UUID
-	CardID     uuid.UUID
-	Level      int32
-	ObtainedAt time.Time
+type Profile struct {
+	AccountID     uuid.UUID `sql:"primary_key"`
+	DisplayName   string
+	Bio           *string
+	ShowcaseCards string
+	UpdatedAt     time.Time
 }

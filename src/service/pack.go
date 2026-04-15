@@ -55,6 +55,7 @@ type PackCardPayload struct {
 	TagName      *string              `json:"tag_name"`
 	Rarity       model.CardRarity     `json:"rarity"`
 	IsOwned      *bool                `json:"is_owned,omitempty"`
+	Level        *int32               `json:"level,omitempty"`
 	Anime        PackCardAnimePayload `json:"anime"`
 }
 
@@ -166,11 +167,14 @@ func (s *PackService) FindOneById(ctx context.Context, id string, accountId stri
 		for i, c := range payload.Cards {
 			cardIds[i] = c.CardId
 		}
-		ownedMap, err := s.service.repository.AccountCard.FindOwnedCardIds(ctx, accountId, cardIds)
+		ownedMap, err := s.service.repository.AccountCard.FindOwnedWithLevel(ctx, accountId, cardIds)
 		if err == nil {
 			for i := range payload.Cards {
-				owned := ownedMap[payload.Cards[i].CardId]
+				info, owned := ownedMap[payload.Cards[i].CardId]
 				payload.Cards[i].IsOwned = &owned
+				if owned {
+					payload.Cards[i].Level = &info.Level
+				}
 			}
 		}
 	}

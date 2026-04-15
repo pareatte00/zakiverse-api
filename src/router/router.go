@@ -69,4 +69,22 @@ func Bind(d Dependency) {
 		Middleware: d.Middleware,
 		Service:    d.Service,
 	})
+	AccountBalance(v1, AccountBalanceDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
+	CheckIn(v1, CheckInDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
+	Profile(v1, ProfileDependency{
+		Config:     d.Config,
+		Credential: d.Credential,
+		Middleware: d.Middleware,
+		Service:    d.Service,
+	})
 }

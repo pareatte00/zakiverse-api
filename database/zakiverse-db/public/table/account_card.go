@@ -20,6 +20,7 @@ type accountCardTable struct {
 	ID         postgres.ColumnString
 	AccountID  postgres.ColumnString
 	CardID     postgres.ColumnString
+	Level      postgres.ColumnInteger
 	ObtainedAt postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
@@ -65,10 +66,11 @@ func newAccountCardTableImpl(schemaName, tableName, alias string) accountCardTab
 		IDColumn         = postgres.StringColumn("id")
 		AccountIDColumn  = postgres.StringColumn("account_id")
 		CardIDColumn     = postgres.StringColumn("card_id")
+		LevelColumn      = postgres.IntegerColumn("level")
 		ObtainedAtColumn = postgres.TimestampzColumn("obtained_at")
-		allColumns       = postgres.ColumnList{IDColumn, AccountIDColumn, CardIDColumn, ObtainedAtColumn}
-		mutableColumns   = postgres.ColumnList{AccountIDColumn, CardIDColumn, ObtainedAtColumn}
-		defaultColumns   = postgres.ColumnList{IDColumn, ObtainedAtColumn}
+		allColumns       = postgres.ColumnList{IDColumn, AccountIDColumn, CardIDColumn, LevelColumn, ObtainedAtColumn}
+		mutableColumns   = postgres.ColumnList{AccountIDColumn, CardIDColumn, LevelColumn, ObtainedAtColumn}
+		defaultColumns   = postgres.ColumnList{IDColumn, LevelColumn, ObtainedAtColumn}
 	)
 
 	return accountCardTable{
@@ -78,6 +80,7 @@ func newAccountCardTableImpl(schemaName, tableName, alias string) accountCardTab
 		ID:         IDColumn,
 		AccountID:  AccountIDColumn,
 		CardID:     CardIDColumn,
+		Level:      LevelColumn,
 		ObtainedAt: ObtainedAtColumn,
 
 		AllColumns:     allColumns,

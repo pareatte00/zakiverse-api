@@ -12,10 +12,8 @@ import (
 	"time"
 )
 
-type AccountCard struct {
-	ID         uuid.UUID `sql:"primary_key"`
-	AccountID  uuid.UUID
-	CardID     uuid.UUID
-	Level      int32
-	ObtainedAt time.Time
+type AccountBalance struct {
+	AccountID uuid.UUID `sql:"primary_key"`
+	Coin      int32
+	UpdatedAt time.Time
 }

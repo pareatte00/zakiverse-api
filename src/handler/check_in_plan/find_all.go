@@ -1,0 +1,33 @@
+package check_in_plan
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/zakiverse/zakiverse-api/src/service"
+	"github.com/zakiverse/zakiverse-api/util/binder"
+	"github.com/zakiverse/zakiverse-api/util/response"
+)
+
+type findAllRequest struct {
+	Page  int64 `json:"page" validate:"required,min=1"`
+	Limit int64 `json:"limit" validate:"required,min=1,max=100"`
+}
+
+func (h Handler) FindAll(c *gin.Context) {
+	var request findAllRequest
+	if !binder.ShouldBindJson(c, &request) {
+		return
+	}
+
+	payload, meta, codeErr := h.service.CheckIn.FindAllPlans(c.Request.Context(), service.FindAllPlansParam{
+		Page:  request.Page,
+		Limit: request.Limit,
+	})
+	if !codeErr.OK() {
+		response.Error(c, codeErr.Code(), response.NewError().WithDebug(codeErr.Error()))
+		return
+	}
+
+	response.Http(c, http.StatusOK, response.NewHttp().WithPayload(payload).WithMeta(meta))
+}

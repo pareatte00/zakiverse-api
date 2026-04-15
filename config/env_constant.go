@@ -13,6 +13,13 @@ type ConfigConstant struct {
 	Database         ConfigConstantDatabase    `mapstructure:"database" validate:"required"`
 	Outbound         ConfigConstantOutbound    `mapstructure:"outbound" validate:"required"`
 	Auth             ConfigConstantAuth        `mapstructure:"auth" validate:"required"`
+	Game             ConfigConstantGame        `mapstructure:"game" validate:"required"`
+}
+
+type ConfigConstantGame struct {
+	PullCostSingle int            `mapstructure:"pull_cost_single" validate:"required"`
+	PullCostMulti  int            `mapstructure:"pull_cost_multi" validate:"required"`
+	OverflowCoins  map[string]int `mapstructure:"overflow_coins" validate:"required"`
 }
 
 type ConfigConstantAuth struct {

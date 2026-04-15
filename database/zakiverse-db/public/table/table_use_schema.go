@@ -11,13 +11,17 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Account = Account.FromSchema(schema)
+	AccountBalance = AccountBalance.FromSchema(schema)
 	AccountCard = AccountCard.FromSchema(schema)
 	AccountPackPity = AccountPackPity.FromSchema(schema)
 	AccountPullHistory = AccountPullHistory.FromSchema(schema)
 	Anime = Anime.FromSchema(schema)
 	Card = Card.FromSchema(schema)
 	CardTag = CardTag.FromSchema(schema)
+	CheckInPlan = CheckInPlan.FromSchema(schema)
+	CheckInRecord = CheckInRecord.FromSchema(schema)
 	Pack = Pack.FromSchema(schema)
 	PackCard = PackCard.FromSchema(schema)
 	PackPool = PackPool.FromSchema(schema)
+	Profile = Profile.FromSchema(schema)
 }

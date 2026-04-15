@@ -116,4 +116,46 @@ func init() {
 			locale.EN: "Pack is not in current rotation",
 		},
 	})
+	reg(InsufficientCoins, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Insufficient coins",
+		},
+	})
+	reg(CheckInTooEarly, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Cannot claim yet",
+		},
+	})
+	reg(CheckInMaxReached, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Maximum claims reached",
+		},
+	})
+	reg(CheckInPlanInactive, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Check-in plan is not active",
+		},
+	})
+	reg(DisplayNameTaken, Definition{
+		StatusCode: http.StatusConflict,
+		Message: map[locale.Locale]string{
+			locale.EN: "Display name is already taken",
+		},
+	})
+	reg(ShowcaseCardNotOwned, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Showcase card not owned",
+		},
+	})
+	reg(ShowcaseTooMany, Definition{
+		StatusCode: http.StatusBadRequest,
+		Message: map[locale.Locale]string{
+			locale.EN: "Maximum 6 showcase cards",
+		},
+	})
 }

@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 
+	"github.com/go-jet/jet/v2/qrm"
 	"github.com/google/uuid"
 	"github.com/zakiverse/zakiverse-api/core/code"
 	"github.com/zakiverse/zakiverse-api/database/zakiverse-db/public/model"
+	accountCardRepo "github.com/zakiverse/zakiverse-api/src/repository/account_card"
 	historyRepo "github.com/zakiverse/zakiverse-api/src/repository/account_pull_history"
 	pityRepo "github.com/zakiverse/zakiverse-api/src/repository/account_pack_pity"
 	"github.com/zakiverse/zakiverse-api/src/repository/pack"
@@ -14,24 +17,54 @@ import (
 )
 
 type PullResultPayload struct {
-	Cards []PulledCardPayload `json:"cards"`
+	Cards   []PulledCardPayload `json:"cards"`
+	Balance PullBalancePayload  `json:"balance"`
+}
+
+type PullBalancePayload struct {
+	Coin       int32 `json:"coin"`
+	CoinSpent  int32 `json:"coin_spent"`
+	CoinGained int32 `json:"coin_gained"`
+}
+
+type LevelUpPayload struct {
+	OldLevel int32 `json:"old_level"`
+	NewLevel int32 `json:"new_level"`
 }
 
 type PulledCardPayload struct {
-	CardId     uuid.UUID            `json:"card_id"`
-	Rarity     string               `json:"rarity"`
-	IsNew      bool                 `json:"is_new"`
-	IsPity     bool                 `json:"is_pity"`
-	IsFeatured bool                 `json:"is_featured"`
-	Name       string               `json:"name"`
-	Image      string               `json:"image"`
-	Config     CardConfig           `json:"config"`
-	TagName    string               `json:"tag_name"`
-	Favorite   int32                `json:"favorite"`
-	Anime      PackCardAnimePayload `json:"anime"`
+	CardId      uuid.UUID            `json:"card_id"`
+	Rarity      string               `json:"rarity"`
+	IsNew       bool                 `json:"is_new"`
+	IsPity      bool                 `json:"is_pity"`
+	IsFeatured  bool                 `json:"is_featured"`
+	Name        string               `json:"name"`
+	Image       string               `json:"image"`
+	Config      CardConfig           `json:"config"`
+	TagName     string               `json:"tag_name"`
+	Favorite    int32                `json:"favorite"`
+	Anime       PackCardAnimePayload `json:"anime"`
+	LevelUp     *LevelUpPayload      `json:"level_up"`
+	CoinsGained *int32               `json:"coins_gained"`
 }
 
 func (s *PackService) Pull(ctx context.Context, accountId string, packId string, mode string) (PullResultPayload, code.I) {
+	// 0. Ensure account balance exists
+	codeErr := s.service.AccountBalance.EnsureExists(ctx, accountId)
+	if !codeErr.OK() {
+		return PullResultPayload{}, codeErr
+	}
+
+	// 0a. Deduct coins
+	cost := int32(s.service.config.Game.PullCostSingle)
+	if mode == "multi" {
+		cost = int32(s.service.config.Game.PullCostMulti)
+	}
+	_, err := s.service.repository.AccountBalance.DeductCoins(ctx, accountId, int(cost))
+	if err != nil {
+		return PullResultPayload{}, code.InsufficientCoins.Err()
+	}
+
 	// 1. Get pack with config
 	packData, err := s.service.repository.Pack.FindOneById(ctx, packId)
 	if err != nil {
@@ -151,16 +184,37 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string,
 		return PullResultPayload{}, code.HttpInternalServerError.Err().WithError(trace.Wrap(err))
 	}
 
-	// 7. Grant cards to account (skip duplicates)
+	// 7. Grant cards to account with dupe handling (level-up / overflow)
+	var totalCoinsGained int32
 	for i, pulled := range pulledCards {
-		_, codeErr := s.service.AccountCard.AddCard(ctx, AddCardParam{
-			AccountId: accountId,
-			CardId:    pulled.CardId.String(),
-		})
-		if codeErr.OK() {
-			pulledCards[i].IsNew = true
+		existing, findErr := s.service.repository.AccountCard.FindOneByAccountIdAndCardId(ctx, accountId, pulled.CardId.String())
+		if findErr != nil {
+			if errors.Is(findErr, qrm.ErrNoRows) {
+				// New card — insert
+				_, _ = s.service.repository.AccountCard.CreateOne(ctx, accountCardRepo.CreateOneParam{
+					AccountId: accountId,
+					CardId:    pulled.CardId.String(),
+				})
+				pulledCards[i].IsNew = true
+			}
+		} else if existing.Level < 5 {
+			// Dupe, level up
+			updated, levelErr := s.service.repository.AccountCard.IncrementLevel(ctx, accountId, pulled.CardId.String())
+			if levelErr == nil {
+				pulledCards[i].LevelUp = &LevelUpPayload{
+					OldLevel: existing.Level,
+					NewLevel: updated.Level,
+				}
+			}
+		} else {
+			// Dupe, already max level — overflow to coins
+			overflowCoins := int32(s.service.config.Game.OverflowCoins[pulled.Rarity])
+			if overflowCoins > 0 {
+				s.service.repository.AccountBalance.AddCoins(ctx, accountId, int(overflowCoins))
+				pulledCards[i].CoinsGained = &overflowCoins
+				totalCoinsGained += overflowCoins
+			}
 		}
-		// If already owned, IsNew stays false — no error
 	}
 
 	// 8. Save pull history
@@ -178,10 +232,19 @@ func (s *PackService) Pull(ctx context.Context, accountId string, packId string,
 	}
 	if err := s.service.repository.AccountPullHistory.CreateMany(ctx, historyParams); err != nil {
 		// Log but don't fail the pull - history is non-critical
-		// The cards are already granted
 	}
 
-	return PullResultPayload{Cards: pulledCards}, code.OK()
+	// 9. Get final balance
+	finalBalance, _ := s.service.repository.AccountBalance.FindOne(ctx, accountId)
+
+	return PullResultPayload{
+		Cards: pulledCards,
+		Balance: PullBalancePayload{
+			Coin:       finalBalance.Coin,
+			CoinSpent:  cost,
+			CoinGained: totalCoinsGained,
+		},
+	}, code.OK()
 }
 
 func groupCardsByRarity(cards []pack.PackCardWithRarity) map[string][]pack.PackCardWithRarity {
